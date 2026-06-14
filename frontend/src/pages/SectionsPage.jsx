@@ -33,14 +33,16 @@ export default function SectionsPage() {
         {sections.map((s) => (
           <div className="col-md-6 col-lg-4" key={s.id}>
             <Link to={`/sections/${s.category}`} className="text-decoration-none">
-              <div className="card h-100 shadow-sm hover-shadow">
-                <div className="card-body">
-                  <span className="fs-2">{ICONS[s.category] || '📁'}</span>
-                  <h2 className="h5 card-title mt-2">{s.title}</h2>
-                  <p className="card-text text-muted small">{s.description}</p>
-                  <span className="badge bg-secondary">{s.articles_count} статей</span>
+                <div className="card h-100 shadow-sm hover-shadow">
+                  <div className="card-body d-flex gap-3">
+                    <div className="section-card-icon">{ICONS[s.category] || '📁'}</div>
+                    <div>
+                      <h2 className="h5 card-title mt-2">{s.title}</h2>
+                      <p className="card-text text-muted small">{s.description}</p>
+                      <span className="badge bg-primary">{s.articles_count} статей</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
             </Link>
           </div>
         ))}

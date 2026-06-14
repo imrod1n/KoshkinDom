@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ThemeToggle from './ThemeToggle';
 
 const navLinkClass = ({ isActive }) =>
   `nav-link ${isActive ? 'active fw-semibold' : ''}`;
@@ -9,7 +10,7 @@ export default function Layout() {
 
   return (
     <>
-      <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+      <nav className="navbar navbar-expand-lg sticky-top app-navbar">
         <div className="container">
           <Link className="navbar-brand fw-bold" to="/">
             🐱 Кошкин Дом
@@ -54,6 +55,9 @@ export default function Layout() {
               )}
             </ul>
             <ul className="navbar-nav">
+              <li className="nav-item d-flex align-items-center">
+                <ThemeToggle />
+              </li>
               {user ? (
                 <>
                   <li className="nav-item">

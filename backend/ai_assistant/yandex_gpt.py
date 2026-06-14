@@ -7,7 +7,7 @@ YANDEX_API_KEY = os.getenv('YANDEX_API_KEY') or os.getenv('YANDEX_IAM_TOKEN')
 YANDEX_GPT_MODEL = os.getenv('YANDEX_GPT_MODEL', 'yandex-gpt-3.5')
 YANDEX_GPT_ENDPOINT = os.getenv(
     'YANDEX_GPT_ENDPOINT',
-    f'https://api.generative.cloud.yandex.net/v1/models/{YANDEX_GPT_MODEL}/completions',
+    f'gpt://b1gtun08c2i8n7n9qmlf/yandexgpt-lite',
 )
 
 DEFAULT_PARAMETERS = {

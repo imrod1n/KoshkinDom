@@ -9,6 +9,7 @@ export default function SectionDetailPage() {
   const { user } = useAuth();
   const [section, setSection] = useState(null);
   const [articles, setArticles] = useState([]);
+  const [expanded, setExpanded] = useState({});
 
   useEffect(() => {
     client.get(`/sections/${category}/`).then(({ data }) => setSection(data));
@@ -38,9 +39,32 @@ export default function SectionDetailPage() {
       ) : (
         articles.map((a) => (
           <div className="card mb-3" key={a.id}>
-            <div className="card-body">
-              <h2 className="h5">{a.title}</h2>
-              <DraftContentView raw={a.content_raw} text={a.content_text} />
+            <div className="card-body article-preview">
+              <div className="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <h2 className="h5 mb-1">{a.title}</h2>
+                  <div className="article-meta">
+                    {a.author?.username ? `@${a.author.username}` : ''}
+                    {a.created_at ? ` · ${new Date(a.created_at).toLocaleDateString('ru-RU')}` : ''}
+                  </div>
+                </div>
+                <div>
+                  <button
+                    className="btn btn-sm btn-outline-primary"
+                    onClick={() => setExpanded((s) => ({ ...s, [a.id]: !s[a.id] }))}
+                  >
+                    {expanded[a.id] ? 'Свернуть' : 'Читать'}
+                  </button>
+                </div>
+              </div>
+
+              {expanded[a.id] ? (
+                <DraftContentView raw={a.content_raw} text={a.content_text} />
+              ) : (
+                <p className="mb-0">
+                  {a.content_text ? (a.content_text.length > 300 ? `${a.content_text.slice(0, 300)}…` : a.content_text) : ''}
+                </p>
+              )}
             </div>
           </div>
         ))
