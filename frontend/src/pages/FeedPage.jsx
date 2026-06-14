@@ -107,9 +107,9 @@ export default function FeedPage() {
 
             <div className="feed">
               <h4 className="mb-3">Лента новостей</h4>
-              {loading ? (
-                <div className="text-center py-5 text-muted">Загрузка...</div>
-              ) : (posts.length === 0 ? (
+              {loading && <div className="text-center py-5 text-muted">Загрузка...</div>}
+
+              {!loading && posts.length === 0 && (
                 samplePosts.map(post => (
                   <div key={post.id} className="card mb-3 shadow-sm">
                     <div className="card-body">
@@ -121,9 +121,12 @@ export default function FeedPage() {
                       </div>
                     </div>
                   </div>
-                )) : (
-                  posts.map((p) => <PostCard key={p.id} post={p} onUpdate={load} />)
-                ) )}
+                ))
+              )}
+
+              {!loading && posts.length > 0 && (
+                posts.map((p) => <PostCard key={p.id} post={p} onUpdate={load} />)
+              )}
             </div>
           </div>
 
