@@ -1,7 +1,15 @@
 import json
 import os
+import socket
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+try:
+    import requests
+    _HAS_REQUESTS = True
+except Exception:
+    requests = None
+    _HAS_REQUESTS = False
 
 YANDEX_API_KEY = os.getenv('YANDEX_API_KEY') or os.getenv('YANDEX_IAM_TOKEN')
 YANDEX_GPT_MODEL = os.getenv('YANDEX_GPT_MODEL', 'yandex-gpt-3.5')
@@ -63,23 +71,47 @@ def generate_yandex_answer(question: str) -> str:
         'input': question,
         'parameters': DEFAULT_PARAMETERS,
     }
-    body = json.dumps(payload).encode('utf-8')
     headers = {
         'Authorization': f'Bearer {YANDEX_API_KEY}',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    request = Request(YANDEX_GPT_ENDPOINT, data=body, headers=headers, method='POST')
 
-    try:
-        with urlopen(request, timeout=30) as response:
-            response_body = response.read().decode('utf-8')
-            return _parse_response_body(response_body)
-    except HTTPError as exc:
-        error_body = exc.read().decode('utf-8', errors='ignore')
-        message = f'Ошибка YandexGPT: {exc.code} {exc.reason}'
-        if error_body:
-            message += f' — {error_body}'
-        raise RuntimeError(message)
-    except URLError as exc:
-        raise RuntimeError(f'Ошибка сети при обращении к YandexGPT: {exc.reason}')
+    # Prefer requests (respects environment proxies), fall back to urllib
+    if _HAS_REQUESTS:
+        try:
+            resp = requests.post(YANDEX_GPT_ENDPOINT, json=payload, headers=headers, timeout=30)
+            resp.raise_for_status()
+            return _parse_response_body(resp.text)
+        except requests.exceptions.RequestException as exc:
+            # Diagnose common DNS / network errors
+            msg = str(exc)
+            cause = getattr(exc, '__cause__', None)
+            if isinstance(cause, socket.gaierror) or 'Name or service not known' in msg or 'Temporary failure in name resolution' in msg:
+                raise RuntimeError(
+                    f'Ошибка сети при обращении к YandexGPT: {msg}.\n' 
+                    'Проверьте DNS или настройку прокси (HTTPS_PROXY / HTTP_PROXY).'
+                )
+            raise RuntimeError(f'Ошибка YandexGPT: {msg}')
+    else:
+        body = json.dumps(payload).encode('utf-8')
+        request = Request(YANDEX_GPT_ENDPOINT, data=body, headers=headers, method='POST')
+        try:
+            with urlopen(request, timeout=30) as response:
+                response_body = response.read().decode('utf-8')
+                return _parse_response_body(response_body)
+        except HTTPError as exc:
+            error_body = exc.read().decode('utf-8', errors='ignore')
+            message = f'Ошибка YandexGPT: {exc.code} {exc.reason}'
+            if error_body:
+                message += f' — {error_body}'
+            raise RuntimeError(message)
+        except URLError as exc:
+            reason = exc.reason
+            # urllib may wrap socket.gaierror
+            if isinstance(reason, socket.gaierror) or 'Name or service not known' in str(reason):
+                raise RuntimeError(
+                    f'Ошибка сети при обращении к YandexGPT: {reason}.\n'
+                    'Проверьте DNS или настройку прокси (HTTPS_PROXY / HTTP_PROXY).'
+                )
+            raise RuntimeError(f'Ошибка сети при обращении к YandexGPT: {reason}')
