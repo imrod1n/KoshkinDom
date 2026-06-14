@@ -19,7 +19,7 @@ DEBUG = False
 ALLOWED_HOSTS = ['https://koshkindom-u7zj.onrender.com']
 
 CORS_ALLOWED_ORIGINS = [
-    'https://koshkin-dom.onrender.com/',  # например, https://example.com
+    'https://koshkin-dom.onrender.com',  # например, https://example.com
 ]
 
 if not DEBUG:
@@ -160,5 +160,5 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-CORS_ALLOWED_ORIGINS = 'https://koshkin-dom.onrender.com/'
+CORS_ALLOWED_ORIGINS = 'https://koshkin-dom.onrender.com'
 CORS_ALLOW_CREDENTIALS = True
