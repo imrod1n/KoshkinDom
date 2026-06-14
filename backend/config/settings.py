@@ -1,3 +1,4 @@
+import dj_database_url
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -97,14 +98,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 ASGI_APPLICATION = 'config.asgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'koshkin_dom',
-        'USER': 'postgres',
-        'PASSWORD': 'q2e4t6u8',
-        'HOST': '127.0.0.1',  # для локального подключения можно использовать 'localhost' или '127.0.0.1'
-        'PORT': '5432',  # стандартный порт для PostgreSQL
-    }
+    'default': dj_database_url.parse(os.environ.get("DATABASE_URL"))
 }
 
 CHANNEL_LAYERS = {
