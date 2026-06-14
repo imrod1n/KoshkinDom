@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'https://backend-wmk8.onrender.com/api';
+const API_URL = import.meta.env.VITE_API_URL || 'https://koshkindom-u7zj.onrender.com/api';
 
 const client = axios.create({
   baseURL: API_URL,
