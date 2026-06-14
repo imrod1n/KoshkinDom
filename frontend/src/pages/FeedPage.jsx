@@ -16,8 +16,12 @@ export default function FeedPage() {
   const load = useCallback(async () => {
     setLoading(true);
     const params = feed === 'following' ? { feed: 'following' } : {};
-    const { data } = await client.get('/posts/', { params });
-    setPosts(data.results ?? data);
+    try {
+      const { data } = await client.get('/posts/', { params });
+      setPosts(data.results ?? data);
+    } catch (err) {
+      // keep posts as empty array on error
+    }
     setLoading(false);
   }, [feed]);
 
@@ -51,56 +55,91 @@ export default function FeedPage() {
     load();
   };
 
+  // Fallback sample posts (кошачьи) when feed is empty
+  const samplePosts = [
+    { id: 's1', author: 'Барсик', text: 'Сегодня поймал солнечного зайчика! 🐾' },
+    { id: 's2', author: 'Мурка', text: 'Кто-нибудь знает, где достать лучшую кошачью мяту?' },
+  ];
+
   return (
-    <div className="row">
-      <div className="col-lg-8 mx-auto">
-        <h1 className="h3 mb-3">Лента новостей</h1>
-        <div className="btn-group mb-3">
-          <button
-            type="button"
-            className={`btn btn-sm ${feed === 'all' ? 'btn-primary' : 'btn-outline-primary'}`}
-            onClick={() => setFeed('all')}
-          >
-            Все
-          </button>
-          {user && (
-            <button
-              type="button"
-              className={`btn btn-sm ${feed === 'following' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setFeed('following')}
-            >
-              Подписки
-            </button>
-          )}
-        </div>
-        {user && (
-          <form className="card mb-4 shadow-sm" onSubmit={publish}>
-            <div className="card-body">
-              <h2 className="h6">Новая публикация</h2>
-              <DraftEditor onChange={setDraft} />
-              <div className="mt-2">
-                <label className="form-label small text-muted">Фото к публикации</label>
-                <input
-                  type="file"
-                  className="form-control form-control-sm"
-                  accept="image/*"
-                  onChange={onImageChange}
-                />
+    <div className="bg-light min-vh-100 py-4">
+      <div className="container">
+        <div className="row">
+          <div className="col-md-3">
+            <div className="card mb-4 shadow-sm">
+              <div className="card-body">
+                <h5>Мой профиль</h5>
+                <p className="text-muted">Статус: Сплю 20 часов в сутки</p>
               </div>
-              {imagePreview && (
-                <img src={imagePreview} alt="Превью" className="img-fluid rounded mt-2" style={{ maxHeight: 240 }} />
-              )}
-              <button className="btn btn-primary mt-2" type="submit">Опубликовать</button>
             </div>
-          </form>
-        )}
-        {loading ? (
-          <div className="text-center py-5">Загрузка...</div>
-        ) : posts.length === 0 ? (
-          <p className="text-muted">Пока нет публикаций. Будьте первым!</p>
-        ) : (
-          posts.map((p) => <PostCard key={p.id} post={p} onUpdate={load} />)
-        )}
+          </div>
+
+          <div className="col-md-6">
+            <div className="card mb-4 shadow-sm">
+              <div className="card-body">
+                <h6 className="card-title">Поделитесь мурчанием:</h6>
+                <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
+                  {user ? (
+                    <DraftEditor onChange={setDraft} />
+                  ) : (
+                    <div className="text-muted">Войдите, чтобы написать сообщение.</div>
+                  )}
+                </div>
+                {user && (
+                  <>
+                    <div className="mb-2">
+                      <label className="form-label small text-muted">Фото к публикации</label>
+                      <input
+                        type="file"
+                        className="form-control form-control-sm"
+                        accept="image/*"
+                        onChange={onImageChange}
+                      />
+                    </div>
+                    {imagePreview && (
+                      <img src={imagePreview} alt="Превью" className="img-fluid rounded mb-2" style={{ maxHeight: 240 }} />
+                    )}
+                    <button className="btn btn-warning w-100 fw-bold" onClick={publish}>Опубликовать</button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="feed">
+              <h4 className="mb-3">Лента новостей</h4>
+              {loading ? (
+                <div className="text-center py-5 text-muted">Загрузка...</div>
+              ) : (posts.length === 0 ? (
+                samplePosts.map(post => (
+                  <div key={post.id} className="card mb-3 shadow-sm">
+                    <div className="card-body">
+                      <h6 className="fw-bold text-primary">{post.author}</h6>
+                      <p className="card-text">{post.text}</p>
+                      <div className="d-flex gap-2">
+                        <button className="btn btn-outline-danger btn-sm">❤ Лайк</button>
+                        <button className="btn btn-outline-secondary btn-sm">💬 Мяукнуть</button>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  posts.map((p) => <PostCard key={p.id} post={p} onUpdate={load} />)
+                ) )}
+            </div>
+          </div>
+
+          <div className="col-md-3">
+            <div className="card shadow-sm">
+              <div className="card-body">
+                <h6>Интересные коты</h6>
+                <ul className="list-unstyled">
+                  <li className="mb-2">🐾 Кот Матроскин</li>
+                  <li className="mb-2">🐾 Чеширский Кот</li>
+                  <li className="mb-2">🐾 Кот в Сапогах</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
