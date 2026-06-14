@@ -160,5 +160,7 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 }
 
-CORS_ALLOWED_ORIGINS = 'https://koshkin-dom.onrender.com'
+CORS_ALLOWED_ORIGINS = [
+    'https://koshkin-dom.onrender.com',
+]
 CORS_ALLOW_CREDENTIALS = True
