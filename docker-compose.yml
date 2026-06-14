@@ -1,0 +1,22 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: koshkin_dom_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: koshkin_dom
+      MARIADB_USER: koshkin
+      MARIADB_PASSWORD: koshkin
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  mysql_data:

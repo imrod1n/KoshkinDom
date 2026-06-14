@@ -1,0 +1,23 @@
+body {
+  background-color: #f8f9fa;
+}
+
+.card.hover-shadow:hover {
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+}
+
+.DraftEditor-root,
+.draft-editor-body .DraftEditor-root {
+  font-family: inherit;
+}
+
+.draft-content h1 { font-size: 1.5rem; font-weight: 600; }
+.draft-content h2 { font-size: 1.25rem; font-weight: 600; }
+.draft-content h3 { font-size: 1.1rem; font-weight: 600; }
+.draft-content ul, .draft-content ol { padding-left: 1.5rem; }
+.draft-content strong { font-weight: 700; }
+.draft-content em { font-style: italic; }
+
+.draft-toolbar .btn {
+  min-width: 2rem;
+}
