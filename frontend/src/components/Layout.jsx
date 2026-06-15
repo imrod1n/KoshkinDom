@@ -71,7 +71,7 @@ export default function Layout() {
                     <NavLink className={navLinkClass} to="/reminders">Напоминания</NavLink>
                   </li>
                 </>
-              )}
+              )
             </ul>
             <ul className="navbar-nav">
               <li className="nav-item d-flex align-items-center">
