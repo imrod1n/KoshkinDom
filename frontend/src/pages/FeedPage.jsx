@@ -77,9 +77,15 @@ export default function FeedPage() {
           </div>
 
           <div className="col-md-6">
+            <div className="card d-flex mb-4 shadow-sm">
+              <div className="card-body">
+                <h2 className="card-title">Кошкин дом -- единое место для владельуев кошек</h2>
+                <p>Собрано вместе всё необходимое: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
+              </div>
+            </div>
             <div className="card mb-4 shadow-sm">
               <div className="card-body">
-                <h6 className="card-title">Поделитесь мурчанием:</h6>
+                <h6 className="card-title">Расскажите о ваших котиках:</h6>
                 {user ? (
                   <>
                     <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
@@ -89,7 +95,7 @@ export default function FeedPage() {
                   </>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-muted mb-3">Войдите в систему, чтобы поделиться постом</p>
+                    <p className="text-muted mb-3">Войдите в систему, чтобы делиться постами, статьями, пользоваться наши ии-помощником, общаться с единомышленниками!</p>
                     <Link to="/login" className="btn btn-primary btn-lg">
                       Войти в систему
                     </Link>
