@@ -50,9 +50,9 @@ export default function AIPage() {
             <div key={m.id} className={`d-flex mb-3 ${m.role === 'assistant' ? '' : 'justify-content-end'}`}>
               <div style={{ maxWidth: '75%' }}>
                 <div className={`p-3 rounded ${m.role === 'assistant' ? 'bg-light' : 'bg-primary text-white'}`}>
+                  {m.role === 'assistant' && <div className="small text-success mt-2">ИИ-ассистент</div>}
                   {m.role === 'user' && <div className="small text-muted mb-1 text-end">Вы</div>}
                   <div>{m.text}</div>
-                  {m.role === 'assistant' && <div className="small text-success mt-2">Помощник</div>}
                 </div>
               </div>
             </div>

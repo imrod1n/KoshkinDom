@@ -99,11 +99,20 @@ export default function PostDetailPage() {
             )}
 
             {post.image && (
-              <img src={post.image} alt="post" className="img-fluid mb-3" />
+              <img
+                src={typeof post.image === 'object' ? post.image.url : post.image}
+                alt="post"
+                className="img-fluid mb-3"
+              />
             )}
 
             {post.video && (
-              <video src={post.video} controls className="img-fluid mb-3" style={{ maxHeight: '500px', width: '100%' }} />
+              <video
+                src={typeof post.video === 'object' ? post.video.url : post.video}
+                controls
+                className="img-fluid mb-3"
+                style={{ maxHeight: '500px', width: '100%' }}
+              />
             )}
 
             <div className="d-flex gap-2 mb-3">

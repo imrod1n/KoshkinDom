@@ -55,11 +55,15 @@ export default function PostCard({ post, onUpdate }) {
           <View raw={post.content_raw} text={post.content_text} />
         </div>
         {post.image && (
-          <img src={post.image} alt="" className="img-fluid rounded mt-2" />
+          <img
+            src={typeof post.image === 'object' ? post.image.url : post.image}
+            alt=""
+            className="img-fluid rounded mt-2"
+          />
         )}
         {post.video && (
           <video
-            src={post.video}
+            src={typeof post.video === 'object' ? post.video.url : post.video}
             controls
             className="w-100 rounded mt-2"
             style={{ maxHeight: '400px', width: '100%' }}

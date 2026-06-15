@@ -82,9 +82,13 @@ class PostSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if instance.image:
             url = instance.image.url
+            if not url.startswith('/'):
+                url = f'/{url.lstrip('/')}'
             data['image'] = request.build_absolute_uri(url) if request else url
         if instance.video:
             url = instance.video.url
+            if not url.startswith('/'):
+                url = f'/{url.lstrip('/')}'
             data['video'] = request.build_absolute_uri(url) if request else url
         return data
 

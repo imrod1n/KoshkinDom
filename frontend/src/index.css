@@ -162,3 +162,22 @@ footer {
 }
 
 .draft-content p { line-height: 1.6; }
+
+/* Ensure media inside post cards doesn't overflow */
+.card img, .card video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* Prevent very tall images from breaking layout on small screens */
+.card img {
+  max-height: 60vh;
+}
+
+/* If image is inside flex containers, ensure it shrinks when necessary */
+.card .img-fluid {
+  width: auto;
+  max-width: 100%;
+}
