@@ -69,8 +69,8 @@ export default function FeedPage() {
         <div className="row">
 
           <div className="col-md-6">
-            <div className="card d-flex mb-4 shadow-sm">
-              <img src={MyImage} className="card-img"/>
+            <div className="card mb-4 shadow-sm d-flex flex-row align-items-center">
+              <img src={MyImage} className="card-img" width={100} height={100}/>
                 <h2 className="card-title">Добро пожаловать в кошкин дом - единое место для владельwев кошек</h2>
                 <p>Здесь собрано вместе всё, что вам нужно: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
               </div>
