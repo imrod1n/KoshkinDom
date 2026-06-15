@@ -1,7 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from .models import User, UserFollow
+from .models import User, UserFollow, Notification
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,3 +58,11 @@ class UserFollowSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserFollow
         fields = ('id', 'follower', 'following', 'created_at')
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = ('id', 'notification_type', 'title', 'message', 'url', 'is_read', 'created_at')
+        read_only_fields = ('id', 'created_at')
+

@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
+import NotificationsModal from './NotificationsModal';
 
 const navLinkClass = ({ isActive }) =>
   `nav-link ${isActive ? 'active fw-semibold' : ''}`;
@@ -10,6 +11,7 @@ const navLinkClass = ({ isActive }) =>
 export default function Layout() {
   const { user, logout } = useAuth();
   const [notificationsCount, setNotificationsCount] = useState(0);
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -17,7 +19,8 @@ export default function Layout() {
       return;
     }
     client.get('/accounts/notifications/').then(({ data }) => {
-      setNotificationsCount((data.results ?? []).length);
+      const unreadCount = (data.results ?? []).filter(n => !n.is_read).length;
+      setNotificationsCount(unreadCount);
     }).catch(() => {});
   }, [user]);
 
@@ -59,9 +62,13 @@ export default function Layout() {
               {user && (
                 <>
                   <li className="nav-item">
-                    <NavLink className={navLinkClass} to="/notifications">
+                    <button
+                      className="nav-link btn btn-link"
+                      onClick={() => setShowNotificationsModal(true)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       Уведомления {notificationsCount > 0 ? `(${notificationsCount})` : ''}
-                    </NavLink>
+                    </button>
                   </li>
                   <li className="nav-item">
                     <NavLink className={navLinkClass} to="/messages">Сообщения</NavLink>
@@ -107,6 +114,10 @@ export default function Layout() {
       <footer className="text-center text-muted py-4 border-top">
         <small>Кошкин Дом — дипломный проект, социальная сеть для любителей кошек</small>
       </footer>
+      <NotificationsModal
+        show={showNotificationsModal}
+        onHide={() => setShowNotificationsModal(false)}
+      />
     </>
   );
 }

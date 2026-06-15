@@ -7,12 +7,12 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import UserFollow
+from accounts.models import UserFollow, Notification
+from accounts.serializers import RegisterSerializer, UserFollowSerializer, UserSerializer, NotificationSerializer
 from communities.models import CommunityMembership
 from events.models import Event
 from posts.models import Post
 from reminders.models import Reminder
-from .serializers import RegisterSerializer, UserFollowSerializer, UserSerializer
 
 User = get_user_model()
 
@@ -87,53 +87,31 @@ class FollowersListView(generics.ListAPIView):
         return UserFollow.objects.filter(following=user).select_related('follower')
 
 
-class NotificationListView(APIView):
+class NotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
-        user = request.user
-        now = timezone.now()
-        today = timezone.localdate()
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
 
-        following_ids = UserFollow.objects.filter(follower=user).values_list('following_id', flat=True)
-        upcoming_events = Event.objects.filter(attendees__user=user, starts_at__gte=now).order_by('starts_at')[:5]
-        new_posts = Post.objects.filter(
-            Q(author_id__in=following_ids) | Q(community__members__user=user)
-        ).exclude(author=user).distinct().order_by('-created_at')[:5]
-        upcoming_reminders = Reminder.objects.filter(
-            pet__owner=user, is_done=False, due_date__gte=today
-        ).order_by('due_date')[:5]
 
-        notifications = []
-        for ev in upcoming_events:
-            notifications.append({
-                'id': f'event-{ev.id}',
-                'type': 'event',
-                'title': f'Запись на событие "{ev.title}"',
-                'message': f'Мероприятие состоится {ev.starts_at.strftime("%d.%m.%Y %H:%M")}',
-                'url': f'/events',
-                'created_at': ev.starts_at,
-            })
-        for post in new_posts:
-            source = post.community.name if post.community else f'@{post.author.username}'
-            message = post.content_text[:120] if post.content_text else ''
-            notifications.append({
-                'id': f'post-{post.id}',
-                'type': 'post',
-                'title': f'Новый пост от {source}',
-                'message': message,
-                'url': '/',
-                'created_at': post.created_at,
-            })
-        for rem in upcoming_reminders:
-            notifications.append({
-                'id': f'reminder-{rem.id}',
-                'type': 'reminder',
-                'title': f'Напоминание по {rem.pet.name}',
-                'message': f'{rem.title} на {rem.due_date}',
-                'url': '/reminders',
-                'created_at': datetime.combine(rem.due_date, time.min),
-            })
+class NotificationMarkAsReadView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
 
-        notifications.sort(key=lambda item: item['created_at'], reverse=True)
-        return Response({'results': notifications})
+    def post(self, request, pk):
+        try:
+            notification = Notification.objects.get(id=pk, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return Response({'detail': 'Уведомление отмечено как прочитанное'})
+        except Notification.DoesNotExist:
+            return Response({'detail': 'Уведомление не найдено'}, status=404)
+
+
+class NotificationMarkAllAsReadView(APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request):
+        # Mark all as read
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({'detail': 'Все уведомления отмечены как прочитанные'})

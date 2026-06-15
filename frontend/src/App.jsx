@@ -14,7 +14,7 @@ const MessagesPage = lazy(() => import('./pages/MessagesPage'));
 const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const RegisterPage = lazy(() => import('./pages/RegisterPage'));
 const RemindersPage = lazy(() => import('./pages/RemindersPage'));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const PostDetailPage = lazy(() => import('./pages/PostDetailPage'));
 const SectionDetailPage = lazy(() => import('./pages/SectionDetailPage'));
 const ArticleEditorPage = lazy(() => import('./pages/ArticleEditorPage'));
 const ArticleReadPage = lazy(() => import('./pages/ArticleReadPage'));
@@ -48,7 +48,7 @@ function AppRoutes() {
           <Route path="forum" element={<ForumPage />} />
           <Route path="forum/questions/:id" element={<ForumTopicPage />} />
           <Route path="events" element={<EventsPage />} />
-          <Route path="notifications" element={<NotificationsPage />} />
+          <Route path="posts/:id" element={<PostDetailPage />} />
           <Route path="communities" element={<CommunitiesPage />} />
           <Route path="ai" element={<AIPage />} />
           <Route path="messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />

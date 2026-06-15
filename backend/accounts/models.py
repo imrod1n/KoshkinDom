@@ -29,3 +29,27 @@ class UserFollow(models.Model):
         unique_together = ('follower', 'following')
         verbose_name = 'Подписка на пользователя'
         verbose_name_plural = 'Подписки на пользователей'
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('event', 'Событие'),
+        ('post', 'Пост'),
+        ('reminder', 'Напоминание'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    url = models.CharField(max_length=500, default='/')
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Уведомление'
+        verbose_name_plural = 'Уведомления'
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f'{self.title} ({self.user.username})'

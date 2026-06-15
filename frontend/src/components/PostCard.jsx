@@ -57,6 +57,9 @@ export default function PostCard({ post, onUpdate }) {
         {post.image && (
           <img src={post.image} alt="" className="img-fluid rounded mt-2" />
         )}
+        {post.video && (
+          <video src={post.video} controls className="img-fluid rounded mt-2" style={{ maxHeight: '400px' }} />
+        )}
         <div className="d-flex gap-3 mt-3">
           <button
             className={`btn btn-sm ${liked ? 'btn-danger' : 'btn-outline-danger'}`}
@@ -70,6 +73,9 @@ export default function PostCard({ post, onUpdate }) {
             ↪ Репост
           </button>
           <span className="text-muted small align-self-center">💬 {comments.length}</span>
+          <Link to={`/posts/${post.id}`} className="btn btn-sm btn-outline-primary ms-auto">
+            Подробнее
+          </Link>
         </div>
         {comments.length > 0 && (
           <ul className="list-unstyled mt-3 mb-0 small">

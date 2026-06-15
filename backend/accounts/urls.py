@@ -5,6 +5,8 @@ from .views import (
     FollowersListView,
     FollowingListView,
     NotificationListView,
+    NotificationMarkAsReadView,
+    NotificationMarkAllAsReadView,
     ProfileView,
     RegisterView,
     UserDetailView,
@@ -20,4 +22,6 @@ urlpatterns = [
     path('users/<str:username>/following/', FollowingListView.as_view(), name='following'),
     path('users/<str:username>/followers/', FollowersListView.as_view(), name='followers'),
     path('notifications/', NotificationListView.as_view(), name='notifications'),
+    path('notifications/<int:pk>/read/', NotificationMarkAsReadView.as_view(), name='notification-read'),
+    path('notifications/mark-all-read/', NotificationMarkAllAsReadView.as_view(), name='notifications-mark-all-read'),
 ]

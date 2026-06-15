@@ -13,6 +13,7 @@ class Post(models.Model):
     content_raw = models.JSONField('Контент Draft.js', default=dict)
     content_text = models.TextField('Текст', blank=True)
     image = models.ImageField('Фото', upload_to='posts/', blank=True, null=True)
+    video = models.FileField('Видео', upload_to='posts/videos/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     repost_of = models.ForeignKey(

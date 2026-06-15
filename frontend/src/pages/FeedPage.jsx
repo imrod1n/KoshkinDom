@@ -13,6 +13,8 @@ export default function FeedPage() {
   const [draft, setDraft] = useState({ raw: { blocks: [], entityMap: {} }, text: '' });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [videoPreview, setVideoPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [communities, setCommunities] = useState([]);
   const [communityId, setCommunityId] = useState('');
@@ -51,20 +53,33 @@ export default function FeedPage() {
     }
   };
 
+  const onVideoChange = (e) => {
+    const file = e.target.files?.[0];
+    setVideoFile(file || null);
+    if (file) {
+      setVideoPreview(URL.createObjectURL(file));
+    } else {
+      setVideoPreview(null);
+    }
+  };
+
   const publish = async (e) => {
     e.preventDefault();
-    if (!draft.text.trim() && !imageFile) return;
+    if (!draft.text.trim() && !imageFile && !videoFile) return;
 
     const form = new FormData();
     form.append('content_raw', JSON.stringify(draft.raw));
     form.append('content_text', draft.text);
     if (imageFile) form.append('image', imageFile);
+    if (videoFile) form.append('video', videoFile);
     if (communityId) form.append('community_id', communityId);
 
     await client.post('/posts/', form);
     setDraft({ raw: { blocks: [], entityMap: {} }, text: '' });
     setImageFile(null);
     setImagePreview(null);
+    setVideoFile(null);
+    setVideoPreview(null);
     setCommunityId('');
     load();
   };
@@ -109,6 +124,56 @@ export default function FeedPage() {
                     <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
                       <DraftEditor onChange={setDraft} />
                     </div>
+                    <div className="mb-2 d-flex gap-2">
+                      <div className="flex-grow-1">
+                        <label className="btn btn-outline-secondary btn-sm w-100">
+                          📷 Добавить фото
+                          <input type="file" accept="image/*" onChange={onImageChange} style={{ display: 'none' }} />
+                        </label>
+                      </div>
+                      <div className="flex-grow-1">
+                        <label className="btn btn-outline-secondary btn-sm w-100">
+                          🎬 Добавить видео
+                          <input type="file" accept="video/*" onChange={onVideoChange} style={{ display: 'none' }} />
+                        </label>
+                      </div>
+                    </div>
+                    {(imagePreview || videoPreview) && (
+                      <div className="mb-2">
+                        {imagePreview && (
+                          <div className="position-relative d-inline-block me-2">
+                            <img src={imagePreview} alt="preview" style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: '4px' }} />
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger position-absolute top-0 end-0"
+                              onClick={() => {
+                                setImageFile(null);
+                                setImagePreview(null);
+                              }}
+                              style={{ borderRadius: '50%', width: '24px', height: '24px', padding: '0' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                        {videoPreview && (
+                          <div className="position-relative d-inline-block">
+                            <video src={videoPreview} style={{ maxWidth: '100px', maxHeight: '100px', borderRadius: '4px' }} />
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-danger position-absolute top-0 end-0"
+                              onClick={() => {
+                                setVideoFile(null);
+                                setVideoPreview(null);
+                              }}
+                              style={{ borderRadius: '50%', width: '24px', height: '24px', padding: '0' }}
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <button className="btn btn-warning w-100 fw-bold" onClick={publish}>Опубликовать</button>
                   </>
                 ) : (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
@@ -56,21 +57,22 @@ export default function ForumPage() {
       {topics.map((t) => (
         <div className="card mb-3" key={t.id}>
           <div className="card-body">
-            <div className="d-flex justify-content-between">
-              <h2 className="h6 mb-1">
-                {t.title}
-                {t.is_expert_question && <span className="badge bg-info ms-2">Эксперт</span>}
-                {t.is_answered && <span className="badge bg-success ms-1">Отвечено</span>}
-              </h2>
-              <button type="button" className="btn btn-sm btn-link" onClick={() => openTopic(t.id)}>Подробнее</button>
+            <div className="d-flex justify-content-between align-items-start">
+              <div>
+                <h2 className="h6 mb-1">
+                  {t.title}
+                  {t.is_expert_question && <span className="badge bg-info ms-2">Эксперт</span>}
+                  {t.is_answered && <span className="badge bg-success ms-1">Отвечено</span>}
+                </h2>
+                <p className="small text-muted">@{t.author.username}</p>
+                <p>{t.body}</p>
+                <div className="small text-muted">
+                  Ответов: {t.replies_count}
+                  {t.is_answered && <span className="badge bg-success ms-2">Отвечено</span>}
+                </div>
+              </div>
             </div>
-            <p className="small text-muted">@{t.author.username}</p>
-            <p>{t.body}</p>
-            <div className="small text-muted">
-              Ответов: {t.replies_count}
-              {t.is_answered && <span className="badge bg-success ms-2">Отвечено</span>}
-            </div>
-            <Link to={`/forum/questions/${t.id}`} className="btn btn-sm btn-link mt-2 p-0">
+            <Link to={`/forum/questions/${t.id}`} className="btn btn-sm btn-primary mt-2">
               Открыть вопрос
             </Link>
           </div>

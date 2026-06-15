@@ -33,11 +33,12 @@ class PostSerializer(serializers.ModelSerializer):
     repost_of_post = serializers.SerializerMethodField()
     comments = CommentSerializer(many=True, read_only=True)
     image = serializers.ImageField(required=False, allow_null=True)
+    video = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Post
         fields = (
-            'id', 'author', 'community', 'community_id', 'content_raw', 'content_text', 'image',
+            'id', 'author', 'community', 'community_id', 'content_raw', 'content_text', 'image', 'video',
             'created_at', 'updated_at', 'repost_of_id', 'repost_of_post',
             'likes_count', 'comments_count', 'is_liked', 'comments',
         )
@@ -78,10 +79,13 @@ class PostSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
+        request = self.context.get('request')
         if instance.image:
-            request = self.context.get('request')
             url = instance.image.url
             data['image'] = request.build_absolute_uri(url) if request else url
+        if instance.video:
+            url = instance.video.url
+            data['video'] = request.build_absolute_uri(url) if request else url
         return data
 
     def create(self, validated_data):
