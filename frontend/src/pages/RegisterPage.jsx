@@ -12,17 +12,26 @@ export default function RegisterPage() {
 
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
 
-  const submit = async (e) => {
-    e.preventDefault();
-    setError('');
-    try {
-      await register(form);
-      navigate('/');
-    } catch (err) {
-      const data = err.response?.data;
-      setError(data ? JSON.stringify(data) : 'Ошибка регистрации');
+const submit = async (e) => {
+  e.preventDefault();
+  setError('');
+  try {
+    await register(form);
+    navigate('/');
+  } catch (err) {
+    const data = err.response?.data;
+    if (data) {
+      const errorMessages = [];
+      for (const [field, messages] of Object.entries(data)) {
+        errorMessages.push(...messages);
+      }
+      setError(errorMessages.join(' '));
+    } else {
+      setError('Ошибка регистрации');
     }
-  };
+  }
+};
+
 
   return (
     <div className="row justify-content-center">
