@@ -57,13 +57,12 @@ export default function Layout() {
                 <NavLink className={navLinkClass} to="/ai">ИИ-помощник</NavLink>
               </li>
               {user && (
-                <li className="nav-item">
-                  <NavLink className={navLinkClass} to="/notifications">
-                    Уведомления {notificationsCount > 0 ? `(${notificationsCount})` : ''}
-                  </NavLink>
-                </li>
-              )}
                 <>
+                  <li className="nav-item">
+                    <NavLink className={navLinkClass} to="/notifications">
+                      Уведомления {notificationsCount > 0 ? `(${notificationsCount})` : ''}
+                    </NavLink>
+                  </li>
                   <li className="nav-item">
                     <NavLink className={navLinkClass} to="/messages">Сообщения</NavLink>
                   </li>
@@ -71,7 +70,7 @@ export default function Layout() {
                     <NavLink className={navLinkClass} to="/reminders">Напоминания</NavLink>
                   </li>
                 </>
-              )
+              )}
             </ul>
             <ul className="navbar-nav">
               <li className="nav-item d-flex align-items-center">
