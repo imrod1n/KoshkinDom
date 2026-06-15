@@ -84,18 +84,6 @@ export default function FeedPage() {
                     <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
                       <DraftEditor onChange={setDraft} />
                     </div>
-                    <div className="mb-2">
-                      <label className="form-label small text-muted">Фото к публикации</label>
-                      <input
-                        type="file"
-                        className="form-control form-control-sm"
-                        accept="image/*"
-                        onChange={onImageChange}
-                      />
-                    </div>
-                    {imagePreview && (
-                      <img src={imagePreview} alt="Превью" className="img-fluid rounded mb-2" style={{ maxHeight: 240 }} />
-                    )}
                     <button className="btn btn-warning w-100 fw-bold" onClick={publish}>Опубликовать</button>
                   </>
                 ) : (
