@@ -4,14 +4,11 @@ import client from '../api/client';
 export default function AIPage() {
   const [question, setQuestion] = useState('');
   const [messages, setMessages] = useState([]);
-  const [faq, setFaq] = useState([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    client.get('/ai/faq/').then(({ data }) => setFaq(data));
     client.get('/ai/history/').then(({ data }) => {
       const list = data.results ?? data;
-      // convert each record {question, answer} into two messages: user then assistant
       if (Array.isArray(list)) {
         const flat = list.slice().reverse().flatMap((r) => ([
           { id: `${r.id}-q`, role: 'user', text: r.question, raw: r },
@@ -30,8 +27,7 @@ export default function AIPage() {
     setLoading(true);
     try {
       const { data } = await client.post('/ai/ask/', { question });
-      // API returns the created record with question+answer — append as two messages
-      setMessages((m) => ([...m, { id: `${data.id}-q`, role: 'user', text: data.question, raw: data }, { id: `${data.id}-a`, role: 'assistant', text: data.answer, raw: data }] ));
+      setMessages((m) => [...m, { id: `${data.id}-q`, role: 'user', text: data.question, raw: data }, { id: `${data.id}-a`, role: 'assistant', text: data.answer, raw: data }]);
       setQuestion('');
     } finally {
       setLoading(false);
@@ -39,11 +35,11 @@ export default function AIPage() {
   };
 
   return (
-    <div className="row">
+    <div className="row justify-content-center">
       <div className="col-lg-8 d-flex flex-column" style={{ height: '80vh' }}>
         <div>
           <h1 className="h3 mb-3">ИИ-помощник по уходу и здоровью</h1>
-          <p className="text-muted small">Отвечает на частые вопросы по базе знаний. Не заменяет консультацию ветеринара.</p>
+          <p className="text-muted small">Задавайте вопросы об уходе и здоровье ваших кошек.</p>
         </div>
 
         <div className="flex-grow-1 overflow-auto mb-3" style={{ paddingBottom: 80 }}>
@@ -81,19 +77,6 @@ export default function AIPage() {
             </div>
           </div>
         </form>
-      </div>
-
-      <div className="col-lg-4">
-        <h2 className="h6">Популярные темы</h2>
-        <ul className="list-group list-group-flush">
-          {faq.map((f, i) => (
-            <li className="list-group-item small" key={i}>
-              <strong>{f.topic}</strong>
-              <br />
-              {f.preview}
-            </li>
-          ))}
-        </ul>
       </div>
     </div>
   );

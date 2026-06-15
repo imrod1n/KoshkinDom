@@ -37,37 +37,36 @@ export default function SectionDetailPage() {
       {articles.length === 0 ? (
         <p className="text-muted">Статей пока нет.</p>
       ) : (
-        articles.map((a) => (
-          <div className="card mb-3" key={a.id}>
-            <div className="card-body article-preview">
-              <div className="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <h2 className="h5 mb-1">{a.title}</h2>
-                  <div className="article-meta">
+        <div className="row">
+          {articles.map((a) => (
+            <div key={a.id} className="col-lg-4 col-md-6 mb-4">
+              <div className="card h-100 shadow-sm">
+                <div className="card-body d-flex flex-column">
+                  <div className="article-meta small text-muted mb-2">
                     {a.author?.username ? `@${a.author.username}` : ''}
                     {a.created_at ? ` · ${new Date(a.created_at).toLocaleDateString('ru-RU')}` : ''}
                   </div>
-                </div>
-                <div>
+                  <h2 className="h5 mb-2 flex-grow-0">{a.title}</h2>
+                  <p className="text-muted small flex-grow-1 mb-3">
+                    {a.description || (a.content_text ? (a.content_text.length > 120 ? `${a.content_text.slice(0, 120)}…` : a.content_text) : '')}
+                  </p>
                   <button
-                    className="btn btn-sm btn-outline-primary"
+                    className="btn btn-sm btn-outline-primary align-self-start"
                     onClick={() => setExpanded((s) => ({ ...s, [a.id]: !s[a.id] }))}
                   >
-                    {expanded[a.id] ? 'Свернуть' : 'Читать'}
+                    {expanded[a.id] ? 'Свернуть' : 'Читать полностью'}
                   </button>
+
+                  {expanded[a.id] && (
+                    <div className="mt-3 pt-3 border-top">
+                      <DraftContentView raw={a.content_raw} text={a.content_text} />
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {expanded[a.id] ? (
-                <DraftContentView raw={a.content_raw} text={a.content_text} />
-              ) : (
-                <p className="mb-0">
-                  {a.content_text ? (a.content_text.length > 300 ? `${a.content_text.slice(0, 300)}…` : a.content_text) : ''}
-                </p>
-              )}
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
     </>
   );

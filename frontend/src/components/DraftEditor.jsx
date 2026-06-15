@@ -5,6 +5,8 @@ import {
   ContentState,
   RichUtils,
   convertToRaw,
+  AtomicBlockUtils,
+  Modifier,
 } from 'draft-js';
 import draftToHtml from 'draftjs-to-html';
 import htmlToDraft from 'html-to-draftjs';
@@ -44,7 +46,7 @@ export function textFromEditor(editorState) {
   return editorState.getCurrentContent().getPlainText();
 }
 
-function EditorToolbar({ editorState, onToggleInline, onToggleBlock }) {
+function EditorToolbar({ editorState, onToggleInline, onToggleBlock, onAddImage, fileInputRef }) {
   const currentStyle = editorState.getCurrentInlineStyle();
   const selection = editorState.getSelection();
   const blockKey = selection.getStartKey();
@@ -84,6 +86,22 @@ function EditorToolbar({ editorState, onToggleInline, onToggleBlock }) {
           {label}
         </button>
       ))}
+      <span className="vr mx-1" />
+      <button
+        type="button"
+        title="Вставить картинку"
+        className="btn btn-sm btn-outline-secondary"
+        onClick={() => fileInputRef.current?.click()}
+      >
+        🖼️
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={onAddImage}
+      />
     </div>
   );
 }
@@ -95,6 +113,7 @@ export default function DraftEditor({
 }) {
   const [editorState, setEditorState] = useState(() => blocksFromRaw(initialRaw));
   const onChangeRef = useRef(onChange);
+  const fileInputRef = useRef(null);
   onChangeRef.current = onChange;
 
   useEffect(() => {
@@ -112,20 +131,63 @@ export default function DraftEditor({
     setEditorState((s) => RichUtils.toggleBlockType(s, blockType));
   }, []);
 
+  const addImage = useCallback((e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const data = evt.target?.result;
+      if (!data) return;
+
+      const contentState = editorState.getCurrentContent();
+      const contentStateWithEntity = contentState.createEntity('IMAGE', 'IMMUTABLE', { src: data });
+      const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+      const newEditorState = AtomicBlockUtils.insertAtomicBlock(editorState, entityKey, ' ');
+
+      setEditorState(newEditorState);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset input
+    e.target.value = '';
+  }, [editorState]);
+
   return (
     <div className="border rounded p-2 bg-white">
       <EditorToolbar
         editorState={editorState}
         onToggleInline={toggleInline}
         onToggleBlock={toggleBlock}
+        onAddImage={addImage}
+        fileInputRef={fileInputRef}
       />
       <div className="draft-editor-body" style={{ minHeight: 120 }}>
         <Editor
           editorState={editorState}
           onChange={setEditorState}
           placeholder={placeholder}
+          blockRendererFn={(block) => {
+            if (block.getType() === 'atomic') {
+              return {
+                component: ImageBlock,
+                editable: false,
+              };
+            }
+            return null;
+          }}
         />
       </div>
+    </div>
+  );
+}
+
+function ImageBlock({ block, contentState }) {
+  const entity = contentState.getEntity(block.getEntityAt(0));
+  const { src } = entity.getData();
+  return (
+    <div className="draft-image-block my-2">
+      <img src={src} alt="uploaded" style={{ maxWidth: '100%', maxHeight: 300 }} />
     </div>
   );
 }
@@ -133,6 +195,32 @@ export default function DraftEditor({
 export function DraftContentView({ raw, text }) {
   if (raw?.blocks?.length) {
     try {
+      // Render images from atomic blocks
+      if (raw.blocks.some((b) => b.type === 'atomic')) {
+        return (
+          <div className="draft-content">
+            {raw.blocks.map((block, idx) => {
+              if (block.type === 'atomic' && raw.entityMap[block.key]) {
+                const entity = raw.entityMap[block.key];
+                if (entity.type === 'IMAGE') {
+                  return (
+                    <div key={idx} className="draft-image-block my-2">
+                      <img
+                        src={entity.data.src}
+                        alt="content"
+                        style={{ maxWidth: '100%', maxHeight: 300 }}
+                      />
+                    </div>
+                  );
+                }
+              }
+              return null;
+            })}
+            <div dangerouslySetInnerHTML={{ __html: draftToHtml(raw) }} />
+          </div>
+        );
+      }
+
       const html = draftToHtml(raw);
       return <div className="draft-content" dangerouslySetInnerHTML={{ __html: html }} />;
     } catch {

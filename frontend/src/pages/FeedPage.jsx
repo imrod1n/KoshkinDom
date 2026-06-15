@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import client from '../api/client';
 import DraftEditor from '../components/DraftEditor';
 import PostCard from '../components/PostCard';
@@ -78,15 +79,11 @@ export default function FeedPage() {
             <div className="card mb-4 shadow-sm">
               <div className="card-body">
                 <h6 className="card-title">Поделитесь мурчанием:</h6>
-                <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
-                  {user ? (
-                    <DraftEditor onChange={setDraft} />
-                  ) : (
-                    <div className="text-muted">Войдите, чтобы написать сообщение.</div>
-                  )}
-                </div>
-                {user && (
+                {user ? (
                   <>
+                    <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
+                      <DraftEditor onChange={setDraft} />
+                    </div>
                     <div className="mb-2">
                       <label className="form-label small text-muted">Фото к публикации</label>
                       <input
@@ -101,6 +98,13 @@ export default function FeedPage() {
                     )}
                     <button className="btn btn-warning w-100 fw-bold" onClick={publish}>Опубликовать</button>
                   </>
+                ) : (
+                  <div className="text-center py-4">
+                    <p className="text-muted mb-3">Войдите в систему, чтобы поделиться постом</p>
+                    <Link to="/login" className="btn btn-primary btn-lg">
+                      Войти в систему
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

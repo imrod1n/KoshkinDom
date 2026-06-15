@@ -9,6 +9,9 @@ export default function MessagesPage() {
   const [active, setActive] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
   const initialOpenDone = useRef(false);
 
   const loadConversations = useCallback(() => {
@@ -71,9 +74,29 @@ export default function MessagesPage() {
 
   const send = async (e) => {
     e.preventDefault();
-    if (!text.trim() || !active) return;
+    if ((!text.trim() && !image) || !active) return;
 
     const body = text.trim();
+
+    // If there's an image, send it via FormData
+    if (image) {
+      const form = new FormData();
+      if (body) form.append('text', body);
+      form.append('image', image);
+
+      setText('');
+      setImage(null);
+      setImagePreview(null);
+
+      const { data } = await client.post(
+        `/messaging/conversations/${active.id}/messages/`,
+        form,
+      );
+      appendMessage(data);
+      return;
+    }
+
+    // Text only
     setText('');
 
     if (sendMessage(body)) return;
@@ -83,6 +106,21 @@ export default function MessagesPage() {
       { text: body },
     );
     appendMessage(data);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const clearImage = () => {
+    setImage(null);
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const chatTitle = (c) => {
@@ -117,20 +155,48 @@ export default function MessagesPage() {
             <strong className="mb-2">{chatTitle(active)}</strong>
             <div className="flex-grow-1 overflow-auto mb-3 border rounded p-2" style={{ maxHeight: 320 }}>
               {messages.map((m) => (
-                <div key={m.id} className={`mb-2 ${m.is_read ? '' : 'fw-semibold'}`}>
+                <div key={m.id} className={`mb-3 ${m.is_read ? '' : 'fw-semibold'}`}>
                   <small className="text-muted">@{m.sender.username}</small>
-                  <div>{m.text}</div>
+                  {m.image && (
+                    <div className="mt-1 mb-2">
+                      <img src={m.image} alt="message" style={{ maxWidth: '100%', maxHeight: 200 }} className="rounded" />
+                    </div>
+                  )}
+                  {m.text && <div>{m.text}</div>}
                 </div>
               ))}
             </div>
+            {imagePreview && (
+              <div className="mb-2">
+                <img src={imagePreview} alt="preview" style={{ maxWidth: '100%', maxHeight: 120 }} className="rounded me-2" />
+                <button type="button" className="btn btn-sm btn-outline-danger" onClick={clearImage}>
+                  Удалить
+                </button>
+              </div>
+            )}
             <form onSubmit={send} className="input-group">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={handleImageChange}
+              />
+              <button
+                type="button"
+                className="btn btn-outline-secondary"
+                onClick={() => fileInputRef.current?.click()}
+                title="Прикрепить картинку"
+              >
+                🖼️
+              </button>
               <input
                 className="form-control"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder="Сообщение..."
               />
-              <button className="btn btn-primary" type="submit">Отправить</button>
+              <button className="btn btn-primary" type="submit" disabled={!text.trim() && !image}>Отправить</button>
             </form>
           </>
         ) : (
