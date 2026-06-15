@@ -69,10 +69,9 @@ export default function FeedPage() {
           <div className="col-md-3">
             <div className="card mb-4 shadow-sm">
               <div className="card-body">
-                <a href={`/user/${user?.username}`}>
+                <a href={`/#/user/${user.username}`} className="text-decoration-none">
                   <h5>Мой профиль</h5>
                 </a>
-                <p className="text-muted">Статус: Сплю 20 часов в сутки</p>
               </div>
             </div>
           </div>
