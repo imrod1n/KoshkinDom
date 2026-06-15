@@ -1,4 +1,8 @@
+import logging
+
 from .yandex_gpt import generate_yandex_answer, is_yandex_configured
+
+logger = logging.getLogger(__name__)
 
 FAQ = [
     {
@@ -57,12 +61,14 @@ def find_answer(question: str) -> str:
     if is_yandex_configured():
         try:
             return generate_yandex_answer(question)
+        except ValueError as exc:
+            # Cat validation error - return directly without trying FAQ
+            return str(exc)
         except Exception as exc:
-            return (
-                'Не удалось получить ответ от YandexGPT. Попробуйте позже или задайте вопрос подробнее. '
-                f'[{exc}]'
-            )
-
+            # API or network error - try FAQ fallback
+            logger.debug(f'YandexGPT error: {exc}')
+            pass
+    
     q = question.lower()
     for item in FAQ:
         if any(kw in q for kw in item['keywords']):

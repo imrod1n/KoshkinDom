@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -34,7 +35,33 @@ export default function LoginPage() {
               </div>
               <div className="mb-3">
                 <label className="form-label">Пароль</label>
-                <input type="password" className="form-control" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowPassword((s) => !s)}
+                    aria-label={showPassword ? 'Скрыть пароль' : 'Показать пароль'}
+                  >
+                    {showPassword ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7z" />
+                        <path d="M12 9a3 3 0 100 6 3 3 0 000-6z" />
+                      </svg>
+                    ) : (
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M2 2l20 20-1.5 1.5L.5 3.5 2 2z" fill="none" />
+                        <path d="M17.94 17.94A10.94 10.94 0 0112 19c-7 0-11-7-11-7 1.73-2.72 4.34-4.79 7.26-5.9L2 2l1.41-1.41L20.36 18.94 17.94 17.94z" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
               <button className="btn btn-primary w-100" type="submit">Войти</button>
             </form>

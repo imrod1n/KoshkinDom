@@ -15,6 +15,25 @@ YANDEX_API_URL = os.getenv('YANDEX_API_URL', 'https://llm.api.cloud.yandex.net/f
 DEFAULT_TEMPERATURE = 0.6
 DEFAULT_MAX_TOKENS = 2000
 
+# Cat-related keywords for validation
+CAT_KEYWORDS = {
+    'кот', 'кота', 'коте', 'кошка', 'кошки', 'кошек', 'кошке', 'котов', 'котам', 'котами',
+    'котёнок', 'котенок', 'котёнка', 'котенка', 'котята', 'котят',
+    'мурлыка', 'мурлычет', 'мяукает', 'мяу', 'мяуканье',
+    'лапа', 'лапы', 'лапки', 'когти', 'коготь',
+    'усы', 'усик', 'усики', 'хвост', 'хвоста', 'хвостом',
+    'шерсть', 'шерстка', 'шерстью', 'мех', 'меха', 'мехом',
+    'породы', 'порода', 'кошачий', 'кошачья', 'кошачье', 'кошачьих',
+    'питание', 'кормить', 'корм', 'еда', 'еды',
+    'здоровье', 'болезнь', 'ветеринар', 'ветеринара', 'доктор',
+    'прививка', 'вакцина', 'лечение',
+    'лоток', 'наполнитель', 'туалет',
+    'поведение', 'характер', 'привычки', 'игра', 'игры', 'игрушки',
+    'дрессировка', 'воспитание', 'обучение',
+    'беременность', 'роды', 'котята',
+    'grooming', 'груминг', 'триминг',
+}
+
 
 class YandexGPTClient:
     """Client for Yandex Foundation Models API."""
@@ -45,6 +64,11 @@ class YandexGPTClient:
             'Content-Type': 'application/json',
             'Authorization': f'Api-Key {self.api_key}',
         }
+
+    def _is_cat_related(self, question: str) -> bool:
+        """Check if question is related to cats."""
+        q = question.lower()
+        return any(keyword in q for keyword in CAT_KEYWORDS)
 
     def _build_request_payload(
         self,
@@ -112,8 +136,16 @@ class YandexGPTClient:
 
         Raises:
             RuntimeError: On network or API errors
-            ValueError: On response parsing errors
+            ValueError: On response parsing errors or non-cat question
         """
+        # Validate that question is about cats
+        if not self._is_cat_related(question):
+            raise ValueError(
+                'Вопрос не относится к кошкам. '
+                'Я помогаю только с вопросами о кошках и их уходе. '
+                'Пожалуйста, задайте вопрос о кошках.'
+            )
+
         payload = self._build_request_payload(question, temperature, max_tokens)
 
         try:
