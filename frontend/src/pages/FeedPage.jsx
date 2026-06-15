@@ -70,10 +70,10 @@ export default function FeedPage() {
 
           <div className="col-md-6">
             <div className="card d-flex mb-4 shadow-sm">
-              <div className="card-img-top" style={{ backgroundImage: `url(${MyImage})`, height: '200px', backgroundSize: 'cover' }}></div>
+              <div className="card-img-top h-100" style={{ backgroundImage: `url(${MyImage})`, height: '200px', backgroundSize: 'cover' }}></div>
               <div className="card-body">
-                <h2 className="card-title">Кошкин дом - единое место для владельwев кошек</h2>
-                <p>Собрано вместе всё необходимое: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
+                <h2 className="card-title">Добро пожаловать в кошкин дом - единое место для владельwев кошек</h2>
+                <p>Здесь собрано вместе всё, что вам нужно: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
               </div>
             </div>
             <div className="card mb-4 shadow-sm">
