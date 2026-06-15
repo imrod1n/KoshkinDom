@@ -11,8 +11,16 @@ export default function AIPage() {
     client.get('/ai/faq/').then(({ data }) => setFaq(data));
     client.get('/ai/history/').then(({ data }) => {
       const list = data.results ?? data;
-      // ensure oldest -> newest order
-      setMessages(Array.isArray(list) ? list.slice().reverse() : list);
+      // convert each record {question, answer} into two messages: user then assistant
+      if (Array.isArray(list)) {
+        const flat = list.slice().reverse().flatMap((r) => ([
+          { id: `${r.id}-q`, role: 'user', text: r.question, raw: r },
+          { id: `${r.id}-a`, role: 'assistant', text: r.answer, raw: r },
+        ]));
+        setMessages(flat);
+      } else {
+        setMessages([]);
+      }
     }).catch(() => {});
   }, []);
 
@@ -22,8 +30,8 @@ export default function AIPage() {
     setLoading(true);
     try {
       const { data } = await client.post('/ai/ask/', { question });
-      // append newest at the end
-      setMessages((m) => [...m, data]);
+      // API returns the created record with question+answer — append as two messages
+      setMessages((m) => ([...m, { id: `${data.id}-q`, role: 'user', text: data.question, raw: data }, { id: `${data.id}-a`, role: 'assistant', text: data.answer, raw: data }] ));
       setQuestion('');
     } finally {
       setLoading(false);
@@ -42,13 +50,13 @@ export default function AIPage() {
           {messages.length === 0 && (
             <div className="text-muted">Пока нет диалогов. Задайте вопрос внизу.</div>
           )}
-          {messages.map((m, idx) => (
-            <div key={m.id ?? idx} className={`d-flex mb-3 ${m.from === 'assistant' ? '' : 'justify-content-end'}`}>
+          {messages.map((m) => (
+            <div key={m.id} className={`d-flex mb-3 ${m.role === 'assistant' ? '' : 'justify-content-end'}`}>
               <div style={{ maxWidth: '75%' }}>
-                <div className={`p-3 rounded ${m.from === 'assistant' ? 'bg-light' : 'bg-primary text-white'}`}>
-                  {m.from !== 'assistant' && <div className="small text-muted mb-1">Вы</div>}
-                  <div>{m.from === 'assistant' ? m.answer : m.question}</div>
-                  {m.from === 'assistant' && <div className="small text-success mt-2">Помощник</div>}
+                <div className={`p-3 rounded ${m.role === 'assistant' ? 'bg-light' : 'bg-primary text-white'}`}>
+                  {m.role === 'user' && <div className="small text-muted mb-1 text-end">Вы</div>}
+                  <div>{m.text}</div>
+                  {m.role === 'assistant' && <div className="small text-success mt-2">Помощник</div>}
                 </div>
               </div>
             </div>
