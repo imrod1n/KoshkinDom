@@ -106,7 +106,7 @@ export default function FeedPage() {
                   <div key={post.id} className="card mb-3 shadow-sm">
                     <div className="card-body">
                       <h6 className="fw-bold text-primary">{post.author}</h6>
-                      <p className="card-text w-100">{post.text}</p>
+                      <p className="card-text" style={{ width: '100%' }}>{post.text}</p>
                       <div className="d-flex gap-2">
                         <button className="btn btn-outline-danger btn-sm">❤ Лайк</button>
                         <button className="btn btn-outline-secondary btn-sm">💬 Мяукнуть</button>
