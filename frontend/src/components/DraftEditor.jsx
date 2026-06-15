@@ -25,10 +25,36 @@ const BLOCK_TYPES = [
   { label: '1.', style: 'ordered-list-item', title: 'Нумерованный список' },
 ];
 
+const KNOWN_BLOCK_TYPES = [
+  'unstyled',
+  'paragraph',
+  'header-one',
+  'header-two',
+  'header-three',
+  'unordered-list-item',
+  'ordered-list-item',
+  'blockquote',
+  'code-block',
+  'atomic',
+];
+
+function normalizeDraftRaw(raw) {
+  if (!raw || !Array.isArray(raw.blocks)) return raw;
+  return {
+    ...raw,
+    blocks: raw.blocks.map((block) => (
+      KNOWN_BLOCK_TYPES.includes(block.type)
+        ? block
+        : { ...block, type: 'unstyled' }
+    )),
+  };
+}
+
 function blocksFromRaw(raw) {
-  if (!raw?.blocks?.length) return EditorState.createEmpty();
+  const normalized = normalizeDraftRaw(raw);
+  if (!normalized?.blocks?.length) return EditorState.createEmpty();
   try {
-    const html = draftToHtml(raw);
+    const html = draftToHtml(normalized);
     const blocks = htmlToDraft(html);
     if (!blocks) return EditorState.createEmpty();
     const content = ContentState.createFromBlockArray(blocks.contentBlocks, blocks.entityMap);
@@ -193,15 +219,16 @@ function ImageBlock({ block, contentState }) {
 }
 
 export function DraftContentView({ raw, text }) {
-  if (raw?.blocks?.length) {
+  const normalized = normalizeDraftRaw(raw);
+  if (normalized?.blocks?.length) {
     try {
       // Render images from atomic blocks
-      if (raw.blocks.some((b) => b.type === 'atomic')) {
+      if (normalized.blocks.some((b) => b.type === 'atomic')) {
         return (
           <div className="draft-content">
-            {raw.blocks.map((block, idx) => {
-              if (block.type === 'atomic' && raw.entityMap[block.key]) {
-                const entity = raw.entityMap[block.key];
+            {normalized.blocks.map((block, idx) => {
+              if (block.type === 'atomic' && normalized.entityMap[block.key]) {
+                const entity = normalized.entityMap[block.key];
                 if (entity.type === 'IMAGE') {
                   return (
                     <div key={idx} className="draft-image-block my-2">
@@ -216,12 +243,12 @@ export function DraftContentView({ raw, text }) {
               }
               return null;
             })}
-            <div dangerouslySetInnerHTML={{ __html: draftToHtml(raw) }} />
+            <div dangerouslySetInnerHTML={{ __html: draftToHtml(normalized) }} />
           </div>
         );
       }
 
-      const html = draftToHtml(raw);
+      const html = draftToHtml(normalized);
       return <div className="draft-content" dangerouslySetInnerHTML={{ __html: html }} />;
     } catch {
       /* fallback */
