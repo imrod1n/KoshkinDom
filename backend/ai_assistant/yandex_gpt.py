@@ -33,6 +33,12 @@ def get_yandex_endpoint() -> str:
     return f'https://api.generative.cloud.yandex.net/v1/models/{YANDEX_GPT_MODEL}/completions'
 
 
+def _build_requests_session():
+    session = requests.Session()
+    session.trust_env = True
+    return session
+
+
 def is_yandex_configured() -> bool:
     return bool(YANDEX_API_KEY)
 
@@ -90,7 +96,8 @@ def generate_yandex_answer(question: str) -> str:
     # Prefer requests (respects environment proxies), fall back to urllib
     if _HAS_REQUESTS:
         try:
-            resp = requests.post(endpoint, json=payload, headers=headers, timeout=30)
+            session = _build_requests_session()
+            resp = session.post(endpoint, json=payload, headers=headers, timeout=30)
             resp.raise_for_status()
             return _parse_response_body(resp.text)
         except requests.exceptions.RequestException as exc:
@@ -105,7 +112,7 @@ def generate_yandex_answer(question: str) -> str:
             raise RuntimeError(f'Ошибка YandexGPT: {msg}')
     else:
         body = json.dumps(payload).encode('utf-8')
-        request = Request(YANDEX_GPT_ENDPOINT, data=body, headers=headers, method='POST')
+        request = Request(endpoint, data=body, headers=headers, method='POST')
         try:
             with urlopen(request, timeout=30) as response:
                 response_body = response.read().decode('utf-8')
