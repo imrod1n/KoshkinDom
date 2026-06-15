@@ -55,7 +55,11 @@ export default function CommunitiesPage() {
           <div className="col-md-6 col-lg-4" key={c.id}>
             <div className="card h-100">
               <div className="card-body">
-                <h2 className="h5">{c.name}</h2>
+                <h2 className="h5">
+                  <Link to={`/communities/${c.slug}`} className="text-decoration-none">
+                    {c.name}
+                  </Link>
+                </h2>
                 <p className="small text-muted">{c.description}</p>
                 <p className="small">👥 {c.members_count} участников</p>
                 {user && (

@@ -18,6 +18,7 @@ const PostDetailPage = lazy(() => import('./pages/PostDetailPage'));
 const SectionDetailPage = lazy(() => import('./pages/SectionDetailPage'));
 const ArticleEditorPage = lazy(() => import('./pages/ArticleEditorPage'));
 const ArticleReadPage = lazy(() => import('./pages/ArticleReadPage'));
+const CommunityPage = lazy(() => import('./pages/CommunityPage'));
 const SectionsPage = lazy(() => import('./pages/SectionsPage'));
 
 function PageLoader() {
@@ -50,6 +51,7 @@ function AppRoutes() {
           <Route path="events" element={<EventsPage />} />
           <Route path="posts/:id" element={<PostDetailPage />} />
           <Route path="communities" element={<CommunitiesPage />} />
+          <Route path="communities/:slug" element={<CommunityPage />} />
           <Route path="ai" element={<AIPage />} />
           <Route path="messages" element={<PrivateRoute><MessagesPage /></PrivateRoute>} />
           <Route path="reminders" element={<PrivateRoute><RemindersPage /></PrivateRoute>} />

@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
-import ThemeToggle from './ThemeToggle';
 import NotificationsModal from './NotificationsModal';
 
 const navLinkClass = ({ isActive }) =>
@@ -80,9 +79,6 @@ export default function Layout() {
               )}
             </ul>
             <ul className="navbar-nav">
-              <li className="nav-item d-flex align-items-center">
-                <ThemeToggle />
-              </li>
               {user ? (
                 <>
                   <li className="nav-item">

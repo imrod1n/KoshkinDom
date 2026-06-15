@@ -58,7 +58,12 @@ export default function PostCard({ post, onUpdate }) {
           <img src={post.image} alt="" className="img-fluid rounded mt-2" />
         )}
         {post.video && (
-          <video src={post.video} controls className="img-fluid rounded mt-2" style={{ maxHeight: '400px' }} />
+          <video
+            src={post.video}
+            controls
+            className="w-100 rounded mt-2"
+            style={{ maxHeight: '400px', width: '100%' }}
+          />
         )}
         <div className="d-flex gap-3 mt-3">
           <button

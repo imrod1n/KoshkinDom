@@ -73,7 +73,7 @@ export default function PostDetailPage() {
   }
 
   const authorDisplay = post.community ? (
-    <Link to={`/communities/${post.community.id}`} className="text-decoration-none">
+    <Link to={`/communities/${post.community.slug}`} className="text-decoration-none">
       <strong>{post.community.name}</strong>
     </Link>
   ) : (

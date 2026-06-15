@@ -31,8 +31,11 @@ class PostListCreateView(generics.ListCreateAPIView):
                 Q(community__members__user=self.request.user)
             ).distinct()
         author = self.request.query_params.get('author')
+        community = self.request.query_params.get('community')
         if author:
             qs = qs.filter(author__username=author)
+        if community:
+            qs = qs.filter(community__slug=community)
         return qs
 
 

@@ -53,26 +53,8 @@ body {
   --bs-border-color: var(--border);
 }
 
-/* Dark theme */
-[data-theme="dark"] {
-  --accent: #3ec1a9;
-  --accent-bg: #063b32;
-  --accent-border: rgba(62,193,169,0.18);
-  --border: #183236;
-  --text-h: #e6f7f2;
-  --text: #cde7df;
-  --social-bg: #052a23;
-  --shadow: 0 6px 18px rgba(0,0,0,0.5);
-  --card-radius: .5rem;
-
-  --bs-body-bg: #021913;
-  --bs-body-color: var(--text);
-  --bs-primary: var(--accent);
-  --bs-primary-rgb: 62,193,169;
-  --bs-border-color: var(--border);
-}
-
 /* Responsive typography and spacing */
+
 @media (max-width: 768px) {
   :root {
     --card-radius: 0.375rem;
