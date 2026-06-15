@@ -67,21 +67,12 @@ export default function FeedPage() {
     <div className="bg-light min-vh-100 py-4">
       <div className="container">
         <div className="row">
-          <div className="col-md-3">
-            <div className="card mb-4 shadow-sm">
-              <div className="card-body">
-                <a href={`/#/user/${user?.username}`} className="text-decoration-none">
-                  <h5>Мой профиль</h5>
-                </a>
-              </div>
-            </div>
-          </div>
 
           <div className="col-md-6">
             <div className="card d-flex mb-4 shadow-sm">
               <div className="card-img-top" style={{ backgroundImage: `url(${MyImage})`, height: '200px', backgroundSize: 'cover' }}></div>
               <div className="card-body">
-                <h2 className="card-title">Кошкин дом -- единое место для владельуев кошек</h2>
+                <h2 className="card-title">Кошкин дом - единое место для владельwев кошек</h2>
                 <p>Собрано вместе всё необходимое: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
               </div>
             </div>
