@@ -1,134 +1,202 @@
-import json
+import logging
 import os
-import socket
-from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
+from typing import Optional
 
-try:
-    import requests
-    _HAS_REQUESTS = True
-except Exception:
-    requests = None
-    _HAS_REQUESTS = False
+import requests
 
+logger = logging.getLogger(__name__)
+
+# Configuration
 YANDEX_API_KEY = os.getenv('YANDEX_API_KEY') or os.getenv('YANDEX_IAM_TOKEN')
-YANDEX_GPT_MODEL = os.getenv('YANDEX_GPT_MODEL', 'yandex-gpt-3.5')
-YANDEX_GPT_ENDPOINT = os.getenv('YANDEX_GPT_ENDPOINT')
+YANDEX_GPT_MODEL = os.getenv('YANDEX_GPT_MODEL', 'gpt://b1gtun08c2i8n7n9qmlf/yandexgpt-lite')
+YANDEX_API_URL = os.getenv('YANDEX_API_URL', 'https://llm.api.cloud.yandex.net/foundationModels/v1/completion')
 
-DEFAULT_PARAMETERS = {
-    'temperature': 0.5,
-    'max_output_tokens': 512,
-}
+# Request defaults
+DEFAULT_TEMPERATURE = 0.6
+DEFAULT_MAX_TOKENS = 2000
 
 
-def get_yandex_endpoint() -> str:
-    if YANDEX_GPT_ENDPOINT:
-        if YANDEX_GPT_ENDPOINT.startswith('gpt://'):
+class YandexGPTClient:
+    """Client for Yandex Foundation Models API."""
+
+    def __init__(self, api_key: Optional[str] = None, model_uri: Optional[str] = None, api_url: Optional[str] = None):
+        """
+        Initialize Yandex GPT client.
+
+        Args:
+            api_key: API key for authentication (defaults to YANDEX_API_KEY env)
+            model_uri: Model URI (defaults to YANDEX_GPT_MODEL env)
+            api_url: API endpoint URL (defaults to YANDEX_API_URL env)
+        """
+        self.api_key = api_key or YANDEX_API_KEY
+        self.model_uri = model_uri or YANDEX_GPT_MODEL
+        self.api_url = api_url or YANDEX_API_URL
+
+        if not self.api_key:
             raise RuntimeError(
-                'Конфигурация YandexGPT неверна: YANDEX_GPT_ENDPOINT не должен начинаться с gpt://. '
-                'Используйте HTTPS URL, например https://api.generative.cloud.yandex.net/v1/models/yandex-gpt-3.5/completions.'
+                'YandexGPT API key not configured. '
+                'Set YANDEX_API_KEY or YANDEX_IAM_TOKEN environment variable.'
             )
-        return YANDEX_GPT_ENDPOINT
 
-    return f'https://api.generative.cloud.yandex.net/v1/models/{YANDEX_GPT_MODEL}/completions'
+        # Create session with proxy support
+        self.session = requests.Session()
+        self.session.trust_env = True
+        self.headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Api-Key {self.api_key}',
+        }
+
+    def _build_request_payload(
+        self,
+        question: str,
+        temperature: float = DEFAULT_TEMPERATURE,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
+    ) -> dict:
+        """Build request payload for Yandex API."""
+        return {
+            'modelUri': self.model_uri,
+            'completionOptions': {
+                'stream': False,
+                'temperature': temperature,
+                'maxTokens': str(max_tokens),
+            },
+            'messages': [
+                {
+                    'role': 'user',
+                    'text': question,
+                }
+            ],
+        }
+
+    def _parse_response(self, response_data: dict) -> str:
+        """Parse Yandex API response and extract text."""
+        try:
+            # Navigate through response structure
+            result = response_data.get('result', {})
+            alternatives = result.get('alternatives', [])
+
+            if not alternatives:
+                raise ValueError('No alternatives in response')
+
+            # Take first alternative
+            first_alt = alternatives[0]
+            message = first_alt.get('message', {})
+            text = message.get('text', '').strip()
+
+            if not text:
+                raise ValueError('Empty text in response')
+
+            return text
+
+        except (KeyError, IndexError, ValueError) as exc:
+            logger.error(f'Failed to parse Yandex response: {exc}')
+            logger.debug(f'Raw response: {response_data}')
+            raise ValueError(f'Cannot parse Yandex GPT response: {exc}')
+
+    def generate_answer(
+        self,
+        question: str,
+        temperature: float = DEFAULT_TEMPERATURE,
+        max_tokens: int = DEFAULT_MAX_TOKENS,
+    ) -> str:
+        """
+        Generate answer using Yandex GPT.
+
+        Args:
+            question: User question
+            temperature: Temperature for generation (0.0-1.0)
+            max_tokens: Maximum tokens in response
+
+        Returns:
+            Generated text answer
+
+        Raises:
+            RuntimeError: On network or API errors
+            ValueError: On response parsing errors
+        """
+        payload = self._build_request_payload(question, temperature, max_tokens)
+
+        try:
+            logger.debug(f'Sending request to {self.api_url}')
+            response = self.session.post(
+                self.api_url,
+                json=payload,
+                headers=self.headers,
+                timeout=30,
+            )
+            response.raise_for_status()
+
+            data = response.json()
+            logger.debug(f'Received response: {data}')
+
+            return self._parse_response(data)
+
+        except requests.exceptions.Timeout:
+            msg = 'Yandex API request timed out (30s)'
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        except requests.exceptions.ConnectionError as exc:
+            # Check for DNS resolution errors
+            if 'Name or service not known' in str(exc) or 'Failed to resolve' in str(exc):
+                msg = (
+                    f'Cannot resolve Yandex API host. Check DNS or proxy settings. '
+                    f'Error: {exc}'
+                )
+            else:
+                msg = f'Connection error to Yandex API: {exc}'
+            logger.error(msg)
+            raise RuntimeError(msg)
+
+        except requests.exceptions.HTTPError as exc:
+            msg = f'Yandex API error: {exc.response.status_code} {exc.response.reason}'
+            try:
+                error_data = exc.response.json()
+                logger.error(f'{msg}. Response: {error_data}')
+            except Exception:
+                logger.error(f'{msg}. Response: {exc.response.text}')
+            raise RuntimeError(msg)
+
+        except requests.exceptions.RequestException as exc:
+            msg = f'Request error: {exc}'
+            logger.error(msg)
+            raise RuntimeError(msg)
 
 
-def _build_requests_session():
-    session = requests.Session()
-    session.trust_env = True
-    return session
+# Global client instance
+_client: Optional[YandexGPTClient] = None
+
+
+def get_client() -> YandexGPTClient:
+    """Get or create global Yandex GPT client."""
+    global _client
+    if _client is None:
+        _client = YandexGPTClient()
+    return _client
 
 
 def is_yandex_configured() -> bool:
+    """Check if Yandex GPT is configured."""
     return bool(YANDEX_API_KEY)
 
 
-def _parse_response_body(body: str) -> str:
-    data = json.loads(body)
-    outputs = data.get('outputs') or data.get('choices') or []
-
-    if isinstance(outputs, dict):
-        outputs = [outputs]
-
-    texts = []
-    for output in outputs:
-        if not isinstance(output, dict):
-            continue
-        if 'content' in output and isinstance(output['content'], list):
-            for item in output['content']:
-                if isinstance(item, dict) and item.get('type') == 'text':
-                    texts.append(item.get('text', ''))
-        if 'text' in output and isinstance(output['text'], str):
-            texts.append(output['text'])
-        if 'message' in output and isinstance(output['message'], dict):
-            message = output['message']
-            if 'content' in message and isinstance(message['content'], list):
-                for item in message['content']:
-                    if isinstance(item, dict) and item.get('type') == 'text':
-                        texts.append(item.get('text', ''))
-        if 'output_text' in output and isinstance(output['output_text'], str):
-            texts.append(output['output_text'])
-
-    if texts:
-        return '\n'.join(texts).strip()
-
-    if isinstance(data.get('result'), str):
-        return data['result'].strip()
-
-    raise ValueError('Не удалось разобрать ответ YandexGPT')
-
-
 def generate_yandex_answer(question: str) -> str:
+    """
+    Generate answer using Yandex GPT.
+
+    Args:
+        question: User question
+
+    Returns:
+        Generated answer text
+
+    Raises:
+        RuntimeError: On configuration or API errors
+    """
     if not is_yandex_configured():
-        raise RuntimeError('YandexGPT не настроен: установите переменную окружения YANDEX_API_KEY или YANDEX_IAM_TOKEN')
+        raise RuntimeError(
+            'YandexGPT not configured. Set YANDEX_API_KEY or YANDEX_IAM_TOKEN environment variable.'
+        )
 
-    payload = {
-        'input': question,
-        'parameters': DEFAULT_PARAMETERS,
-    }
-    headers = {
-        'Authorization': f'Bearer {YANDEX_API_KEY}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
-    endpoint = get_yandex_endpoint()
-
-    # Prefer requests (respects environment proxies), fall back to urllib
-    if _HAS_REQUESTS:
-        try:
-            session = _build_requests_session()
-            resp = session.post(endpoint, json=payload, headers=headers, timeout=30)
-            resp.raise_for_status()
-            return _parse_response_body(resp.text)
-        except requests.exceptions.RequestException as exc:
-            # Diagnose common DNS / network errors
-            msg = str(exc)
-            cause = getattr(exc, '__cause__', None)
-            if isinstance(cause, socket.gaierror) or 'Name or service not known' in msg or 'Temporary failure in name resolution' in msg:
-                raise RuntimeError(
-                    f'Ошибка сети при обращении к YandexGPT: {msg}.\n' 
-                    'Проверьте DNS или настройку прокси (HTTPS_PROXY / HTTP_PROXY).'
-                )
-            raise RuntimeError(f'Ошибка YandexGPT: {msg}')
-    else:
-        body = json.dumps(payload).encode('utf-8')
-        request = Request(endpoint, data=body, headers=headers, method='POST')
-        try:
-            with urlopen(request, timeout=30) as response:
-                response_body = response.read().decode('utf-8')
-                return _parse_response_body(response_body)
-        except HTTPError as exc:
-            error_body = exc.read().decode('utf-8', errors='ignore')
-            message = f'Ошибка YandexGPT: {exc.code} {exc.reason}'
-            if error_body:
-                message += f' — {error_body}'
-            raise RuntimeError(message)
-        except URLError as exc:
-            reason = exc.reason
-            # urllib may wrap socket.gaierror
-            if isinstance(reason, socket.gaierror) or 'Name or service not known' in str(reason):
-                raise RuntimeError(
-                    f'Ошибка сети при обращении к YandexGPT: {reason}.\n'
-                    'Проверьте DNS или настройку прокси (HTTPS_PROXY / HTTP_PROXY).'
-                )
-            raise RuntimeError(f'Ошибка сети при обращении к YandexGPT: {reason}')
+    client = get_client()
+    return client.generate_answer(question)
