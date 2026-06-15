@@ -13,15 +13,24 @@ except Exception:
 
 YANDEX_API_KEY = os.getenv('YANDEX_API_KEY') or os.getenv('YANDEX_IAM_TOKEN')
 YANDEX_GPT_MODEL = os.getenv('YANDEX_GPT_MODEL', 'yandex-gpt-3.5')
-YANDEX_GPT_ENDPOINT = os.getenv(
-    'YANDEX_GPT_ENDPOINT',
-    f'gpt://b1gtun08c2i8n7n9qmlf/yandexgpt-lite',
-)
+YANDEX_GPT_ENDPOINT = os.getenv('YANDEX_GPT_ENDPOINT')
 
 DEFAULT_PARAMETERS = {
     'temperature': 0.5,
     'max_output_tokens': 512,
 }
+
+
+def get_yandex_endpoint() -> str:
+    if YANDEX_GPT_ENDPOINT:
+        if YANDEX_GPT_ENDPOINT.startswith('gpt://'):
+            raise RuntimeError(
+                'Конфигурация YandexGPT неверна: YANDEX_GPT_ENDPOINT не должен начинаться с gpt://. '
+                'Используйте HTTPS URL, например https://api.generative.cloud.yandex.net/v1/models/yandex-gpt-3.5/completions.'
+            )
+        return YANDEX_GPT_ENDPOINT
+
+    return f'https://api.generative.cloud.yandex.net/v1/models/{YANDEX_GPT_MODEL}/completions'
 
 
 def is_yandex_configured() -> bool:
@@ -76,11 +85,12 @@ def generate_yandex_answer(question: str) -> str:
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
+    endpoint = get_yandex_endpoint()
 
     # Prefer requests (respects environment proxies), fall back to urllib
     if _HAS_REQUESTS:
         try:
-            resp = requests.post(YANDEX_GPT_ENDPOINT, json=payload, headers=headers, timeout=30)
+            resp = requests.post(endpoint, json=payload, headers=headers, timeout=30)
             resp.raise_for_status()
             return _parse_response_body(resp.text)
         except requests.exceptions.RequestException as exc:
