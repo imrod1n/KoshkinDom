@@ -12,6 +12,16 @@ class MessageSerializer(serializers.ModelSerializer):
         fields = ('id', 'sender', 'text', 'image', 'created_at', 'is_read')
         read_only_fields = ('id', 'sender', 'created_at')
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        request = self.context.get('request')
+        if instance.image:
+            url = instance.image.url
+            if not url.startswith('/'):
+                url = f'/{url.lstrip('/')}'
+            data['image'] = request.build_absolute_uri(url) if request else url
+        return data
+
 
 class ConversationSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)

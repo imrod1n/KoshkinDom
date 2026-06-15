@@ -159,7 +159,12 @@ export default function MessagesPage() {
                   <small className="text-muted">@{m.sender.username}</small>
                   {m.image && (
                     <div className="mt-1 mb-2">
-                      <img src={m.image} alt="message" style={{ maxWidth: '100%', maxHeight: 200 }} className="rounded" />
+                      <img
+                        src={typeof m.image === 'object' ? m.image.url : m.image}
+                        alt="message"
+                        style={{ maxWidth: '100%', maxHeight: 200 }}
+                        className="rounded"
+                      />
                     </div>
                   )}
                   {m.text && <div>{m.text}</div>}
