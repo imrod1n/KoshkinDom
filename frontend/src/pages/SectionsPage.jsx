@@ -9,6 +9,7 @@ const ICONS = {
   health: '💊',
   nutrition: '🍽️',
   training: '🎓',
+  misc: '📦',
 };
 
 export default function SectionsPage() {

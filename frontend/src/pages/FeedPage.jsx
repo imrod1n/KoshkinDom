@@ -14,6 +14,9 @@ export default function FeedPage() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [communities, setCommunities] = useState([]);
+  const [communityId, setCommunityId] = useState('');
+  const [recentArticles, setRecentArticles] = useState([]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -29,6 +32,13 @@ export default function FeedPage() {
 
   useEffect(() => {
     load();
+    client.get('/sections/articles/').then(({ data }) => {
+      const articles = data.results ?? data;
+      setRecentArticles(articles.slice(0, 3));
+    }).catch(() => {});
+    client.get('/communities/').then(({ data }) => {
+      setCommunities((data.results ?? data).filter((c) => c.is_member));
+    }).catch(() => {});
   }, [load]);
 
   const onImageChange = (e) => {
@@ -49,11 +59,13 @@ export default function FeedPage() {
     form.append('content_raw', JSON.stringify(draft.raw));
     form.append('content_text', draft.text);
     if (imageFile) form.append('image', imageFile);
+    if (communityId) form.append('community_id', communityId);
 
     await client.post('/posts/', form);
     setDraft({ raw: { blocks: [], entityMap: {} }, text: '' });
     setImageFile(null);
     setImagePreview(null);
+    setCommunityId('');
     load();
   };
 
@@ -70,7 +82,7 @@ export default function FeedPage() {
 
           <div className="col-md-6">
             <div className="card mb-4 shadow-sm">
-              <img src={MyImage} className="card-img h-75" height={"90%"}/>
+              <img src={MyImage} className="card-img"/>
               <div className="card-body">
                 <h2 className="card-title">Добро пожаловать в кошкин дом - единое место для владельwев кошек</h2>
                 <p>Здесь собрано вместе всё, что вам нужно: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
@@ -81,6 +93,19 @@ export default function FeedPage() {
                 <h6 className="card-title">Расскажите о ваших котиках:</h6>
                 {user ? (
                   <>
+                    <div className="mb-2">
+                      <label className="form-label">Публикация от</label>
+                      <select
+                        className="form-select"
+                        value={communityId}
+                        onChange={(e) => setCommunityId(e.target.value)}
+                      >
+                        <option value="">От себя</option>
+                        {communities.map((c) => (
+                          <option key={c.id} value={c.id}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="border rounded p-2 mb-2" style={{ minHeight: '150px' }}>
                       <DraftEditor onChange={setDraft} />
                     </div>
@@ -123,14 +148,31 @@ export default function FeedPage() {
           </div>
 
           <div className="col-md-3">
-            <div className="card shadow-sm">
+            <div className="card shadow-sm mb-3">
               <div className="card-body">
-                <h6>Интересные коты</h6>
-                <ul className="list-unstyled">
-                  <li className="mb-2">🐾 Кот Матроскин</li>
-                  <li className="mb-2">🐾 Чеширский Кот</li>
-                  <li className="mb-2">🐾 Кот в Сапогах</li>
-                </ul>
+                <h6>Последние статьи</h6>
+                {recentArticles.length === 0 ? (
+                  <p className="text-muted small">Пока нет свежих материалов.</p>
+                ) : (
+                  <div className="d-flex gap-3 overflow-auto pb-2" style={{ minHeight: '240px' }}>
+                    {recentArticles.map((article) => (
+                      <Link
+                        to={`/sections/articles/${article.id}`}
+                        key={article.id}
+                        className="text-decoration-none flex-shrink-0"
+                        style={{ minWidth: '220px' }}
+                      >
+                        <div className="p-3 border rounded hover-shadow h-100 bg-white">
+                          <strong>{article.title}</strong>
+                          <div className="small text-muted mt-2">
+                            {article.author?.username ? `@${article.author.username}` : 'Сообщество'}
+                          </div>
+                          <div className="small text-muted">{new Date(article.created_at).toLocaleDateString('ru-RU')}</div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

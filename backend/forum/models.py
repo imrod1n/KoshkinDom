@@ -20,6 +20,10 @@ class ForumTopic(models.Model):
 
 class ForumReply(models.Model):
     topic = models.ForeignKey(ForumTopic, on_delete=models.CASCADE, related_name='replies')
+    parent = models.ForeignKey(
+        'self', null=True, blank=True, on_delete=models.CASCADE,
+        related_name='children'
+    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='forum_replies'
     )

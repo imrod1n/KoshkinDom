@@ -9,7 +9,7 @@ class ForumTopicListCreateView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        qs = ForumTopic.objects.select_related('author').prefetch_related('replies__author')
+        qs = ForumTopic.objects.select_related('author').prefetch_related('replies__author', 'replies__children__author')
         expert = self.request.query_params.get('expert')
         if expert == '1':
             qs = qs.filter(is_expert_question=True)
@@ -17,7 +17,7 @@ class ForumTopicListCreateView(generics.ListCreateAPIView):
 
 
 class ForumTopicDetailView(generics.RetrieveAPIView):
-    queryset = ForumTopic.objects.prefetch_related('replies__author')
+    queryset = ForumTopic.objects.prefetch_related('replies__author', 'replies__children__author')
     serializer_class = ForumTopicSerializer
 
 

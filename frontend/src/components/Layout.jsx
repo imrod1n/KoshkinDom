@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import client from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import ThemeToggle from './ThemeToggle';
 
@@ -7,6 +9,17 @@ const navLinkClass = ({ isActive }) =>
 
 export default function Layout() {
   const { user, logout } = useAuth();
+  const [notificationsCount, setNotificationsCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) {
+      setNotificationsCount(0);
+      return;
+    }
+    client.get('/accounts/notifications/').then(({ data }) => {
+      setNotificationsCount((data.results ?? []).length);
+    }).catch(() => {});
+  }, [user]);
 
   return (
     <>
@@ -44,6 +57,12 @@ export default function Layout() {
                 <NavLink className={navLinkClass} to="/ai">ИИ-помощник</NavLink>
               </li>
               {user && (
+                <li className="nav-item">
+                  <NavLink className={navLinkClass} to="/notifications">
+                    Уведомления {notificationsCount > 0 ? `(${notificationsCount})` : ''}
+                  </NavLink>
+                </li>
+              )}
                 <>
                   <li className="nav-item">
                     <NavLink className={navLinkClass} to="/messages">Сообщения</NavLink>

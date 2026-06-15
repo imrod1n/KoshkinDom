@@ -6,6 +6,10 @@ class Post(models.Model):
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='posts'
     )
+    community = models.ForeignKey(
+        'communities.Community', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='posts'
+    )
     content_raw = models.JSONField('Контент Draft.js', default=dict)
     content_text = models.TextField('Текст', blank=True)
     image = models.ImageField('Фото', upload_to='posts/', blank=True, null=True)

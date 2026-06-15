@@ -39,7 +39,7 @@ export default function ArticleReadPage() {
             <h1 className="display-6 mb-3">{article.title}</h1>
             <div className="text-muted small mb-3">
               <span>
-                {article.author?.username ? `@${article.author.username}` : 'Автор'}
+                {article.community?.name ? `${article.community.name}` : article.author?.username ? `@${article.author.username}` : 'Автор'}
               </span>
               {article.created_at && (
                 <>

@@ -21,7 +21,7 @@ class ArticleListCreateView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
     def get_queryset(self):
-        qs = Article.objects.select_related('section', 'author')
+        qs = Article.objects.select_related('section', 'author', 'community')
         category = self.request.query_params.get('category')
         if category:
             qs = qs.filter(section__category=category)
@@ -29,5 +29,5 @@ class ArticleListCreateView(generics.ListCreateAPIView):
 
 
 class ArticleDetailView(generics.RetrieveAPIView):
-    queryset = Article.objects.all()
+    queryset = Article.objects.select_related('section', 'author', 'community')
     serializer_class = ArticleSerializer

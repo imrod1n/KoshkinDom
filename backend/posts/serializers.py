@@ -1,8 +1,11 @@
 import json
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from accounts.serializers import UserSerializer
+from communities.models import Community
+from communities.serializers import CommunitySerializer
 from .models import Comment, Like, Post
 
 
@@ -17,6 +20,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class PostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only=True)
+    community = CommunitySerializer(read_only=True)
+    community_id = serializers.PrimaryKeyRelatedField(
+        source='community', queryset=Community.objects.all(), required=False, allow_null=True
+    )
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
@@ -30,7 +37,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = (
-            'id', 'author', 'content_raw', 'content_text', 'image',
+            'id', 'author', 'community', 'community_id', 'content_raw', 'content_text', 'image',
             'created_at', 'updated_at', 'repost_of_id', 'repost_of_post',
             'likes_count', 'comments_count', 'is_liked', 'comments',
         )
@@ -60,6 +67,14 @@ class PostSerializer(serializers.ModelSerializer):
         if obj.repost_of:
             return PostSerializer(obj.repost_of, context=self.context).data
         return None
+
+    def validate(self, attrs):
+        community = attrs.get('community')
+        request = self.context.get('request')
+        if community and request and request.user.is_authenticated:
+            if not community.members.filter(user=request.user).exists() and community.owner_id != request.user.id:
+                raise ValidationError('Для публикации от сообщества необходимо быть участником или владельцем')
+        return attrs
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -17,7 +17,7 @@ class PostListCreateView(generics.ListCreateAPIView):
     parser_classes = (MultiPartParser, FormParser, JSONParser)
 
     def get_queryset(self):
-        qs = Post.objects.select_related('author', 'repost_of').prefetch_related(
+        qs = Post.objects.select_related('author', 'community', 'repost_of').prefetch_related(
             'likes', 'comments__author'
         )
         feed = self.request.query_params.get('feed')
@@ -26,8 +26,10 @@ class PostListCreateView(generics.ListCreateAPIView):
                 follower=self.request.user
             ).values_list('following_id', flat=True)
             qs = qs.filter(
-                Q(author_id__in=following_ids) | Q(author=self.request.user)
-            )
+                Q(author_id__in=following_ids) |
+                Q(author=self.request.user) |
+                Q(community__members__user=self.request.user)
+            ).distinct()
         author = self.request.query_params.get('author')
         if author:
             qs = qs.filter(author__username=author)

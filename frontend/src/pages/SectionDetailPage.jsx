@@ -42,7 +42,7 @@ export default function SectionDetailPage() {
                 <div className="card h-100 shadow-sm">
                   <div className="card-body d-flex flex-column">
                     <div className="article-meta small text-muted mb-2">
-                      {a.author?.username ? `@${a.author.username}` : ''}
+                      {a.community?.name ? `${a.community.name}` : a.author?.username ? `@${a.author.username}` : ''}
                       {a.created_at ? ` · ${new Date(a.created_at).toLocaleDateString('ru-RU')}` : ''}
                     </div>
                     <h2 className="h5 mb-2 flex-grow-0">{a.title}</h2>

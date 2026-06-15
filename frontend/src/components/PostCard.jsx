@@ -34,9 +34,14 @@ export default function PostCard({ post, onUpdate }) {
     <div className="card mb-3 shadow-sm">
       <div className="card-body">
         <div className="d-flex justify-content-between align-items-start">
-          <Link to={`/user/${post.author.username}`} className="fw-semibold text-decoration-none">
-            @{post.author.username}
-          </Link>
+          <div>
+            <Link to={`/user/${post.author.username}`} className="fw-semibold text-decoration-none me-2">
+              @{post.author.username}
+            </Link>
+            {post.community && (
+              <span className="badge bg-secondary">{post.community.name}</span>
+            )}
+          </div>
           <small className="text-muted">
             {new Date(post.created_at).toLocaleString('ru-RU')}
           </small>

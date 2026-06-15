@@ -7,8 +7,6 @@ export default function ForumPage() {
   const [topics, setTopics] = useState([]);
   const [expertOnly, setExpertOnly] = useState(false);
   const [form, setForm] = useState({ title: '', body: '', is_expert_question: false });
-  const [replyText, setReplyText] = useState({});
-  const [expanded, setExpanded] = useState(null);
 
   const load = () => {
     const params = expertOnly ? { expert: '1' } : {};
@@ -26,21 +24,6 @@ export default function ForumPage() {
     await client.post('/forum/topics/', form);
     setForm({ title: '', body: '', is_expert_question: false });
     load();
-  };
-
-  const reply = async (topicId, isExpert = false) => {
-    const body = replyText[topicId];
-    if (!body?.trim()) return;
-    await client.post(`/forum/topics/${topicId}/replies/`, { body, is_expert_answer: isExpert });
-    setReplyText((r) => ({ ...r, [topicId]: '' }));
-    load();
-    const { data } = await client.get(`/forum/topics/${topicId}/`);
-    setExpanded(data);
-  };
-
-  const openTopic = async (id) => {
-    const { data } = await client.get(`/forum/topics/${id}/`);
-    setExpanded(data);
   };
 
   return (
@@ -83,28 +66,13 @@ export default function ForumPage() {
             </div>
             <p className="small text-muted">@{t.author.username}</p>
             <p>{t.body}</p>
-            {(expanded?.id === t.id ? expanded.replies : []).map((r) => (
-              <div key={r.id} className={`ps-3 border-start mb-2 ${r.is_expert_answer ? 'border-success' : ''}`}>
-                <strong>@{r.author.username}</strong>
-                {r.is_expert_answer && <span className="badge bg-success ms-1">Эксперт</span>}
-                <p className="mb-0 small">{r.body}</p>
-              </div>
-            ))}
-            {user && (
-              <div className="mt-2">
-                <textarea
-                  className="form-control form-control-sm"
-                  rows={2}
-                  placeholder="Ответ..."
-                  value={replyText[t.id] || ''}
-                  onChange={(e) => setReplyText({ ...replyText, [t.id]: e.target.value })}
-                />
-                <div className="btn-group btn-group-sm mt-1">
-                  <button type="button" className="btn btn-outline-primary" onClick={() => reply(t.id)}>Ответить</button>
-                  <button type="button" className="btn btn-outline-success" onClick={() => reply(t.id, true)}>Ответ эксперта</button>
-                </div>
-              </div>
-            )}
+            <div className="small text-muted">
+              Ответов: {t.replies_count}
+              {t.is_answered && <span className="badge bg-success ms-2">Отвечено</span>}
+            </div>
+            <Link to={`/forum/questions/${t.id}`} className="btn btn-sm btn-link mt-2 p-0">
+              Открыть вопрос
+            </Link>
           </div>
         </div>
       ))}

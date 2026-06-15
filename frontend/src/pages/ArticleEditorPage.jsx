@@ -10,6 +10,8 @@ export default function ArticleEditorPage() {
   const { category } = useParams();
   const [sections, setSections] = useState([]);
   const [sectionId, setSectionId] = useState('');
+  const [communities, setCommunities] = useState([]);
+  const [communityId, setCommunityId] = useState('');
   const [title, setTitle] = useState('');
   const [draft, setDraft] = useState({ raw: { blocks: [], entityMap: {} }, text: '' });
   const [error, setError] = useState('');
@@ -25,6 +27,9 @@ export default function ArticleEditorPage() {
         setSectionId(String(list[0].id));
       }
     });
+    client.get('/communities/').then(({ data }) => {
+      setCommunities((data.results ?? data).filter((c) => c.is_member));
+    }).catch(() => {});
   }, [category]);
 
   if (!user) {
@@ -46,6 +51,7 @@ export default function ArticleEditorPage() {
       await client.post('/sections/articles/', {
         title,
         section_id: Number(sectionId),
+        community_id: communityId || null,
         content_raw: draft.raw,
         content_text: draft.text,
       });
@@ -64,6 +70,17 @@ export default function ArticleEditorPage() {
         <form className="card shadow-sm" onSubmit={submit}>
           <div className="card-body">
             <div className="mb-3">
+              <label className="form-label">Публиковать от</label>
+              <select
+                className="form-select mb-3"
+                value={communityId}
+                onChange={(e) => setCommunityId(e.target.value)}
+              >
+                <option value="">От себя</option>
+                {communities.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
               <label className="form-label">Тематический раздел</label>
               <select
                 className="form-select"

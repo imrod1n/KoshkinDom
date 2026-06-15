@@ -9,6 +9,7 @@ class Section(models.Model):
         HEALTH = 'health', 'Здоровье'
         NUTRITION = 'nutrition', 'Питание'
         TRAINING = 'training', 'Воспитание'
+        MISC = 'misc', 'Разное'
 
     category = models.CharField(max_length=20, choices=Category.choices, unique=True)
     title = models.CharField(max_length=120)
@@ -24,6 +25,10 @@ class Section(models.Model):
 
 class Article(models.Model):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='articles')
+    community = models.ForeignKey(
+        'communities.Community', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='articles'
+    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
