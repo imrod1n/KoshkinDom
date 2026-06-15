@@ -1,6 +1,26 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-const WS_BASE = import.meta.env.VITE_WS_URL || 'ws://127.0.0.1:7000';
+function getWebSocketBase() {
+  const envUrl = import.meta.env.VITE_WS_URL?.trim();
+  let base = envUrl || '';
+
+  if (!base && typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    base = `${protocol}//${window.location.host}`;
+  }
+
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && base.startsWith('ws://')) {
+    base = base.replace(/^ws:\/\//i, 'wss://');
+  }
+
+  if (!base) {
+    base = 'ws://127.0.0.1:7000';
+  }
+
+  return base.replace(/\/+$/, '');
+}
+
+const WS_BASE = getWebSocketBase();
 
 export function useChatWebSocket(conversationId, onMessage) {
   const wsRef = useRef(null);
