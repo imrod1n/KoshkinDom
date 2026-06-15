@@ -4,6 +4,7 @@ import client from '../api/client';
 import DraftEditor from '../components/DraftEditor';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../context/AuthContext';
+import MyImage from 'backend/media/NL-AwNVEAA2Ct_hsVujF0.png';
 
 export default function FeedPage() {
   const { user } = useAuth();
@@ -78,6 +79,7 @@ export default function FeedPage() {
 
           <div className="col-md-6">
             <div className="card d-flex mb-4 shadow-sm">
+              <div className="card-img-top" style={{ backgroundImage: `url(${MyImage})`, height: '200px', backgroundSize: 'cover' }}></div>
               <div className="card-body">
                 <h2 className="card-title">Кошкин дом -- единое место для владельуев кошек</h2>
                 <p>Собрано вместе всё необходимое: чаты, статьи, обсуждения, напоминания о здоровье питомцев, ии-помощник</p>
@@ -95,7 +97,7 @@ export default function FeedPage() {
                   </>
                 ) : (
                   <div className="text-center py-4">
-                    <p className="text-muted mb-3">Войдите в систему, чтобы делиться постами, статьями, пользоваться наши ии-помощником, общаться с единомышленниками!</p>
+                    <p className="text-muted mb-3">Войдите в систему, чтобы делиться постами, статьями, пользоваться наши ии-помощником, общаться с единомышленниками, !</p>
                     <Link to="/login" className="btn btn-primary btn-lg">
                       Войти в систему
                     </Link>
