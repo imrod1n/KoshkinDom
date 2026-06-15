@@ -4,6 +4,7 @@ import client from '../api/client';
 import DraftEditor from '../components/DraftEditor';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../context/AuthContext';
+import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 export default function FeedPage() {
   const { user } = useAuth();
