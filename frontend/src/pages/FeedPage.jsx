@@ -4,7 +4,6 @@ import client from '../api/client';
 import DraftEditor from '../components/DraftEditor';
 import PostCard from '../components/PostCard';
 import { useAuth } from '../context/AuthContext';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 
 export default function FeedPage() {
   const { user } = useAuth();
@@ -70,7 +69,9 @@ export default function FeedPage() {
           <div className="col-md-3">
             <div className="card mb-4 shadow-sm">
               <div className="card-body">
-                <Route path="user/:username" element={<ProfilePage />} />
+                <a href={`/user/${user?.username}`}>
+                  <h5>Мой профиль</h5>
+                </a>
                 <p className="text-muted">Статус: Сплю 20 часов в сутки</p>
               </div>
             </div>
