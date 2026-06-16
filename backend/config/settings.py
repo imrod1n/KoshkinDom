@@ -152,5 +152,6 @@ SIMPLE_JWT = {
 
 CORS_ALLOWED_ORIGINS = [
     'https://koshkin-dom.onrender.com',
+    'ws://koshkindom-ws.onrender.com'
 ]
 CORS_ALLOW_CREDENTIALS = True
