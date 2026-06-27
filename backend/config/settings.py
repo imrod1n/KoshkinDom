@@ -16,7 +16,7 @@ def env_bool(name: str, default: str = 'False') -> bool:
 
 
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'dev-secret-change-in-production')
-DEBUG = False
+DEBUG = True
 ALLOWED_HOSTS = ['koshkindom-u7zj.onrender.com',
                 'koshkindom-ws.onrender.com']
 
